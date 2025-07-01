@@ -1,6 +1,6 @@
 
-import {  IHasMsgType, MsgTypeValue } from "./IHasMsgType";
-
+import {  IHasMsgType } from "./IHasMsgType";
+import { MsgTypeValue } from "./MessageType";
 export interface ISetRelayMsg extends IHasMsgType {
     
     "message_id": string,     // required, unique. Tạo theo uuid_v4. Ex: 6a079ec1-5d36-4e59-b9b5-13011b384567

@@ -5,13 +5,15 @@ import { IMainLogger } from "../base/IMainLog";
 import { IObserver } from "../base/IObserver";
 import { EventExchangeDSListener } from "../models/EventExchangeDSListener";
 import { IEventMsg } from "../../ipc-shared/IEventMsg";
-import { MsgTypeValue } from "../../ipc-shared/IHasMsgType";
+import { MsgTypeValue } from "../../ipc-shared/MessageType";
 import { IEncodedLog } from "electron/ipc-shared/Log";
 import { ISimpleORM } from "../base/ISimpleORM";
 import { LogSQLiteORM } from "../models/LogSQLiteORM";
 
 
-class LogEventController extends IPCControllerBase
+class LogEventController extends IPCControllerBase<
+any, any
+>
     implements IObserver<IEventMsg>
 {
 

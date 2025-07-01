@@ -8,6 +8,7 @@ import { echoController } from './ipc-controllers/EchoController'
 import { realtimeScreenController } from './ipc-controllers/RealtimeScreenController'
 import { logEventController } from './ipc-controllers/LogEventController'
 import { relaycontroller } from './ipc-controllers/RelayController'
+import { otaController } from './ipc-controllers/OTAController'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -143,6 +144,8 @@ app.whenReady().then(() => createWindow()).then(() => {
     logEventController.bindTargetWindow(win).start();
 
     relaycontroller.bindTargetWindow(win).start();
+
+    // otaController.bindTargetWindow(win).start();
    
   }
 })

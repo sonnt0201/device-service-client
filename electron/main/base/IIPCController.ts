@@ -1,4 +1,6 @@
 /**
+ * No-Dependency
+ * 
  * Interface for a controller that handles a single type of event from Electron IPC (Inter-Process Communication).
  */
 export interface IIPCController<

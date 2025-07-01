@@ -1,14 +1,16 @@
 
 
-import { Alert, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Snackbar, Stack, Switch, Tooltip, Typography } from "@mui/material";
+import { Alert, Button, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Snackbar, Stack, Switch, Tooltip, Typography } from "@mui/material";
 
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { useEffect, useState } from "react";
 import { IReportRelayMsg } from "electron/ipc-shared/IReportRelayMsg";
 import { ISetRelayMsg } from "electron/ipc-shared/ISetRelayMsg";
-import { MsgTypeValue } from "electron/ipc-shared/IHasMsgType";
+import { MsgTypeValue } from "electron/ipc-shared/MessageType";
 import { v4 as uuidv4 } from 'uuid';
+import { disable } from "colors";
+import { OtaTextFileUploadButton } from "./OtaTextFileUploadButton";
 
 
 export const Controls = (
@@ -45,16 +47,16 @@ export const Controls = (
         return () => {
             removeIPCListeners();
         }
-    },[])
+    }, [])
 
 
     useEffect(() => {
         ipcSendRelayRequest();
     }, [relay1, relay2])
 
-   
 
-   
+
+
 
     /**
      * Listen for relay report from ipc main, change the relay switch component if device_id matched 
@@ -113,14 +115,14 @@ export const Controls = (
                     "state": relay2 ? 1 : 0,
                 }
             ],
-           
+
         }
 
         window.ipcRenderer.sendSetRelayMsg(msg)
     }
 
     return <FormGroup >
-        <Stack direction="row">
+        <Stack direction="row" className="items-center">
 
 
 
@@ -153,7 +155,7 @@ export const Controls = (
                     value={selectedDeviceMac}
                     label="Thiết bị"
                     onChange={(e: SelectChangeEvent<string>, _) => {
-                       if (onSelectDevice) onSelectDevice(e.target.value)
+                        if (onSelectDevice) onSelectDevice(e.target.value)
                         // setCurrentDeviceId(e.target.value);
                     }}
                 >
@@ -182,19 +184,26 @@ export const Controls = (
             {/* <FormGroup > */}
             {/* <Stack direction={"row"} alignContent={"center"}> */}
 
-            <FormControlLabel control={<Switch value={relay1}
+            <FormControlLabel  control={<Switch value={relay1}
 
                 defaultChecked
-                onChange={(_, checked: boolean) => setRelay1(checked)
+                onChange={(_, checked: boolean) => setRelay1(checked)}
 
-                }
+                disabled = {!selectedDeviceMac}
             />} label="Rơ le 1" />
 
-            <FormControlLabel control={<Switch
+            <FormControlLabel  control={<Switch
                 value={relay2}
                 defaultChecked
                 onChange={(_, checked: boolean) => setRelay2(checked)}
+
+                disabled = {!selectedDeviceMac}
             />} label="Rơ le 2" />
+
+
+
+           
+
 
             {/* </Stack> */}
 
@@ -208,6 +217,10 @@ export const Controls = (
                     <CachedRoundedIcon color="primary" />
                 </IconButton>
             </Tooltip> */}
+
+            <OtaTextFileUploadButton
+            deviceMAC={selectedDeviceMac}
+            />
 
             {/* </FormGroup> */}
 

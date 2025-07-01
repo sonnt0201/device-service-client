@@ -1,6 +1,9 @@
 import { IPCControllerBase } from "../base";
 import { IpcMainInvokeEvent, IpcMainEvent } from "electron";
 
+/**
+ * Echo controller for testing purpose
+ */
 class EchoController extends IPCControllerBase<string, string> {
     channel(): string {
         return 'echo';

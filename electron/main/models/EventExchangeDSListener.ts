@@ -14,9 +14,17 @@ import { IEventMsg } from "electron/ipc-shared/IEventMsg";
  * 
  * Messages received are notified to observers via `eventMsgNotifier` using [Observable Design Pattern]
  * 
+ * Message notified via `eventMsgNotifier` has `IEventMsg` type
+ * 
  * If a IPCController receives a message, should subcribe and have a filter to choose what messag_type to handle.
  */
 export class EventExchangeDSListener {
+
+    /**
+     * [Observable Design Pattern] Notifier for gas log events. (pump session)
+     */
+    public eventMsgNotifier: Observable<IEventMsg> = new Observable<IEventMsg>();
+
 
     private static _instance: EventExchangeDSListener;
     private _logger: IMainLogger = new MainLogger("EventExchangeDSClient");
@@ -39,11 +47,7 @@ export class EventExchangeDSListener {
 
 
 
-    /**
-     * Notifier for gas log events. (pump session)
-     */
-    public eventMsgNotifier: Observable<IEventMsg> = new Observable<IEventMsg>();
-
+  
     /**
      * Send string to all clients connected
      * 

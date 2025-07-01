@@ -6,6 +6,7 @@ import './App.css'
 import { HomeEntry } from './pages/home/HomeEntry'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CustomAppBar } from './CustomAppBar'
+import { OtaEntry } from './pages/ota/OtaEntry'
 
 function App() {
 
@@ -17,7 +18,7 @@ function App() {
         <div className='mt-10'>
           <Routes>
             <Route path="/" element={<HomeEntry />} />
-            {/* <Route path="/settings" element={<Settings />} /> */}
+            <Route path="/ota" element={<OtaEntry />} />
           </Routes>
         </div>
 

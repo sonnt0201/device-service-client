@@ -9,7 +9,7 @@ import { IObservable } from "../base/IObservable";
 import { webContents } from "electron";
 import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
-import { MsgTypeValue } from "../../ipc-shared/IHasMsgType";
+import { MsgTypeValue } from "../../ipc-shared/MessageType";
 
 class RelayController extends IPCControllerBase<
     ISetRelayMsg,
