@@ -17,7 +17,7 @@ export default defineConfig(({ command }) => {
     resolve: {
       alias: {
         '@': path.join(__dirname, 'src'),
-         '@electron/ipc-shared/': path.resolve(__dirname, 'electron/ipc-shared/'),
+         'electron/ipc-shared/': path.resolve(__dirname, 'electron/ipc-shared/'),
       },
     },
     plugins: [
