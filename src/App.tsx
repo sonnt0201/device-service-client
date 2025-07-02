@@ -4,7 +4,7 @@ import logoVite from './assets/logo-vite.svg'
 import logoElectron from './assets/logo-electron.svg'
 import './App.css'
 import { HomeEntry } from './pages/home/HomeEntry'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import { CustomAppBar } from './CustomAppBar'
 
 function App() {
@@ -15,10 +15,15 @@ function App() {
         <CustomAppBar />
 
         <div className='mt-10'>
-          <Routes>
-            <Route path="/" element={<HomeEntry />} />
-            {/* <Route path="/settings" element={<Settings />} /> */}
-          </Routes>
+          <HomeEntry />
+          {/* <HashRouter> */}
+            {/* <Routes> */}
+              {/* <Route path="/" element={<HomeEntry />} /> */}
+              {/* <Route path="/settings" element={<Settings />} /> */}
+            {/* </Routes> */}
+
+          {/* </HashRouter> */}
+
         </div>
 
       </BrowserRouter>

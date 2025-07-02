@@ -8,7 +8,9 @@ import { IEventMsg } from "../../ipc-shared/IEventMsg";
 import { MsgTypeValue } from "../../ipc-shared/IHasMsgType";
 import { IEncodedLog } from "electron/ipc-shared/Log";
 import { ISimpleORM } from "../base/ISimpleORM";
-import { LogSQLiteORM } from "../models/LogSQLiteORM";
+// import { LogSQLiteORM } from "../models/LogSQLiteORM";
+import { ISimpleSyncORM } from "../base/ISimpleSyncORM";
+import { LogBetterSQLiteORM } from "../models/LogBetterSQLiteORM";
 
 
 class LogEventController extends IPCControllerBase
@@ -23,7 +25,7 @@ class LogEventController extends IPCControllerBase
     private _targetWindow?: BrowserWindow | null; ///< Target window that this controller streams screen & event to.
     private _logger: IMainLogger = new MainLogger("LogEventController");
     private _eventExchangeDSListener: EventExchangeDSListener = EventExchangeDSListener.getInstance(); ///< Device Service client for event exchange.
-    private _logsORM: ISimpleORM<IEncodedLog> = new LogSQLiteORM();
+    private _logsORM: ISimpleSyncORM<IEncodedLog> = new LogBetterSQLiteORM();
     
     channel(): string {
         return "logi-log-event";
