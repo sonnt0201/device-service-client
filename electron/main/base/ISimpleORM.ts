@@ -7,3 +7,4 @@ export interface ISimpleORM<T> {
     delete(id: string): Promise<boolean>;
     // findAll(): Promise<T[]>;
 }
+
