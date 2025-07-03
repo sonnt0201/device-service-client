@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { IEncodedLog } from './ipc-shared/Log';
+
 
 // const ipcRenderer = import('electron').IpcRenderer;
 
