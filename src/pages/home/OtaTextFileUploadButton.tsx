@@ -1,6 +1,10 @@
+import { IDownloadFirmMsg } from "@/ipc-shared/IDownloadFirmMsg"
+import { OtaStatusValue } from "@/ipc-shared/IOtaStatus";
+import { MsgTypeValue } from "@/ipc-shared/MessageType";
+import { OtaProcess } from "@/ipc-shared/OtaProcess";
 import { Button, Stack, Typography } from "@mui/material"
 import { useEffect, useState } from "react"
-
+import { v4 as uuidv4 } from 'uuid';
 /**
  * OTA upload button allow uploading txt file
  * 
@@ -18,16 +22,55 @@ export const OtaTextFileUploadButton = (
     const [disableOTA, setDisableOTA] = useState<boolean>(false)
     const [firmFileName, setFirmFileName] = useState<string>("");
     const [firmText, setFirmText] = useState<string>("") // store txt-format firmware (including base64-encoded 2 firm files) 
+    const [otaStatusValue, setOtaStatusValue] = useState<OtaStatusValue>(OtaStatusValue.SUCCESS);
+    const [process, setProcess] = useState<OtaProcess>(OtaProcess.NONE)
+    
     useEffect(() => {
 
         window.ipcRenderer.onOtaMsg((_, msg) => {
-
+            console.log("OTA: Receive from IPC MAIN")
+            setOtaStatusValue(msg.status)
+            setProcess(msg.process)
         })
 
-        return () => {
-            window.ipcRenderer.removeAllListener()
-        }
+        // return () => {
+        //     window.ipcRenderer.removeAllListener()
+        // }
     }, [])
+
+    useEffect(() => {
+
+        console.log("OTA - Status Value: ", otaStatusValue)
+        console.log("OTA - Ongoing Process: ", process)
+
+      setDisableOTA(!deviceMAC || process !== OtaProcess.NONE)
+    },[deviceMAC, otaStatusValue, process])
+
+/**
+ * start to send txt firm file to ipc main via `ota` channel
+ */
+    const startOTA = () => {
+
+        if (!deviceMAC || !firmText){
+            console.log("No device or firm file selected")
+            return;
+        
+        }
+
+        
+
+        const downloadfirmmsg : IDownloadFirmMsg = {
+            message_id: uuidv4(),
+            message_type: MsgTypeValue.DOWNLOAD_FIRM,
+            device_id: deviceMAC,
+            file: firmText
+        }
+
+        console.log("Start sending firm text")
+
+        window.ipcRenderer.sendOtaFirmware(downloadfirmmsg)
+
+    }
 
 
     const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
@@ -59,29 +102,52 @@ export const OtaTextFileUploadButton = (
         }
     };
 
+    const cancelFileUploaded = () => {
+        setFirmFileName("")
+        setFirmText("")
+    }
+
     return (
         <Stack direction={"row"}>
 
-            <Button
+            {!firmFileName && <Button
+                id="button: upload txt firm file"
                 variant="contained"
                 component="label"
                 sx={{ height: 40, ml: 2 }}
                 disabled={disableOTA}
+
             >
-                {firmFileName ? "Upload firmware" : "Start firmware updating"}
+                Upload firmware
                 <input
                     type="file"
                     hidden
                     accept=".txt"
                     onChange={handleFileChange}
                 />
-            </Button>
+            </Button> }
+
+            {
+                firmFileName &&
+                <Button
+                id="button: start ota"
+                variant="contained"
+                component="label"
+                sx={{ height: 40, mx: 2}}
+                disabled={disableOTA}
+
+                onClick={() => startOTA()}
+
+            > Cập nhật </Button>
+            }
 
 
             {
                 firmFileName && <Button
                     variant="outlined"
                     color="error"
+                    disabled={disableOTA}
+                    onClick={() => cancelFileUploaded()}
 
                 >
                     Hủy
@@ -93,11 +159,11 @@ export const OtaTextFileUploadButton = (
 
                 firmFileName && <Typography
                     alignContent={"center"}
-                    className="w-3/12"
+                    sx={{mx: 2}}
                 >{firmFileName}</Typography>
 
             }
-            
+
         </Stack>
     )
 }

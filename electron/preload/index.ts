@@ -1,10 +1,10 @@
 import { ipcRenderer, contextBridge, IpcRenderer } from 'electron'
-import { IDownloadFirmMsg } from 'electron/ipc-shared/IDownloadFirmMsg'
-import { OtaStatusValue } from 'electron/ipc-shared/IOtaStatus'
-import { IReportRelayMsg } from 'electron/ipc-shared/IReportRelayMsg'
-import { ISetRelayMsg } from 'electron/ipc-shared/ISetRelayMsg'
-import { IEncodedLog } from 'electron/ipc-shared/Log'
-import { OtaProcess } from 'electron/ipc-shared/OtaProcess'
+import { IDownloadFirmMsg } from '@/ipc-shared/IDownloadFirmMsg'
+import { OtaStatusValue } from '@/ipc-shared/IOtaStatus'
+import { IReportRelayMsg } from '@/ipc-shared/IReportRelayMsg'
+import { ISetRelayMsg } from '@/ipc-shared/ISetRelayMsg'
+import { IEncodedLog } from '@/ipc-shared/Log'
+import { OtaProcess } from '@/ipc-shared/OtaProcess'
 import { realtimeScreenController } from 'electron/main/ipc-controllers/RealtimeScreenController'
 
 // --------- Expose some API to the Renderer process ---------

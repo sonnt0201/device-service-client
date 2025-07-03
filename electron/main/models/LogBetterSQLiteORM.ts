@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { ISimpleSyncORM } from "../base/ISimpleSyncORM";
-import { IEncodedLog } from "../../ipc-shared/Log";
+import { IEncodedLog } from "../../../src/ipc-shared/Log";
+import { IORMTimestampFilter } from "@/ipc-shared/IORMTimestampFilter";
 
 
 export class LogBetterSQLiteORM implements ISimpleSyncORM<IEncodedLog> {
@@ -112,4 +113,30 @@ export class LogBetterSQLiteORM implements ISimpleSyncORM<IEncodedLog> {
     const result = stmt.run(log_id);
     return result.changes > 0;
   }
+
+  async readByTimestamp(filter: IORMTimestampFilter = {
+    beginTs: 0,
+    endTs: Date.now(),
+    limit: 1000,
+    priority: "newest"
+  }) {
+
+    if (!filter.beginTs) filter.beginTs = 0;
+    if (!filter.endTs) filter.endTs = 0;
+
+    const order = filter.priority === "oldest" ? "ASC" : "DESC";
+
+    const stmt = this.db.prepare(`
+    SELECT * FROM logs
+    WHERE timestamp BETWEEN ? AND ?
+    ORDER BY timestamp ${order}
+    LIMIT ?
+  `);
+
+    const rows = stmt.all(filter.beginTs, filter.endTs, filter.limit);
+
+    return rows as IEncodedLog[];
+
+  }
+
 }

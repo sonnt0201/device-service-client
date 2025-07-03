@@ -5,14 +5,19 @@ import { Alert, Button, CircularProgress, Divider, FormControl, FormControlLabel
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { useEffect, useState } from "react";
-import { IReportRelayMsg } from "electron/ipc-shared/IReportRelayMsg";
-import { ISetRelayMsg } from "electron/ipc-shared/ISetRelayMsg";
-import { MsgTypeValue } from "electron/ipc-shared/MessageType";
+import { IReportRelayMsg } from "@/ipc-shared/IReportRelayMsg";
+import { ISetRelayMsg } from "@/ipc-shared/ISetRelayMsg";
+import { MsgTypeValue } from "@/ipc-shared/MessageType";
 import { v4 as uuidv4 } from 'uuid';
 import { disable } from "colors";
 import { OtaTextFileUploadButton } from "./OtaTextFileUploadButton";
+import { OtaBinFileUploadButton } from "./OtaBinFileUploadButton";
 
-
+/**
+ * Control bar on the top, has many tool, usually to interract with selected device
+ * @param param0 
+ * @returns 
+ */
 export const Controls = (
     {
         availableDeviceMacs,
@@ -122,7 +127,7 @@ export const Controls = (
     }
 
     return <FormGroup >
-        <Stack direction="row" className="items-center">
+        <Stack direction="row" className="items-center flex flex-row">
 
 
 
@@ -147,7 +152,7 @@ export const Controls = (
 
 
 
-            <FormControl className="w-4/12" >
+            <FormControl className="w-2/12" >
                 <InputLabel id="demo-simple-select-label">Thiết bị</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
@@ -171,8 +176,8 @@ export const Controls = (
 
             <Divider variant="middle" />
 
-            {(selectedDeviceMac != "") && <Typography alignContent={"center"} className="w-3/12">ID Thiết bị: {selectedDeviceMac}</Typography>}
-            {(selectedDeviceMac == "") && <Typography alignContent={"center"} className="text-red-600 w-3/12">Chọn 1 thiết bị</Typography>}
+            {(selectedDeviceMac != "") && <Typography alignContent={"center"} className="w-2/12">ID Thiết bị: {selectedDeviceMac}</Typography>}
+            {(selectedDeviceMac == "") && <Typography alignContent={"center"} className="text-red-600 w-2/12">Chọn 1 thiết bị</Typography>}
 
 
             {/* <FormControlLabel control={<Switch checked={lively} onChange={(_, checked: boolean) => {
@@ -180,29 +185,29 @@ export const Controls = (
         }} />} label="Tự động" /> */}
 
 
-            {/* <Divider variant="middle" /> */}
+            <Divider variant="middle" />
             {/* <FormGroup > */}
             {/* <Stack direction={"row"} alignContent={"center"}> */}
 
-            <FormControlLabel  control={<Switch value={relay1}
+            <FormControlLabel control={<Switch value={relay1}
 
                 defaultChecked
                 onChange={(_, checked: boolean) => setRelay1(checked)}
 
-                disabled = {!selectedDeviceMac}
+                disabled={!selectedDeviceMac}
             />} label="Rơ le 1" />
 
-            <FormControlLabel  control={<Switch
+            <FormControlLabel control={<Switch
                 value={relay2}
                 defaultChecked
                 onChange={(_, checked: boolean) => setRelay2(checked)}
 
-                disabled = {!selectedDeviceMac}
+                disabled={!selectedDeviceMac}
             />} label="Rơ le 2" />
 
 
 
-           
+
 
 
             {/* </Stack> */}
@@ -217,10 +222,12 @@ export const Controls = (
                     <CachedRoundedIcon color="primary" />
                 </IconButton>
             </Tooltip> */}
+           {selectedDeviceMac && <div className="w-4/12">
+                <OtaBinFileUploadButton
+                    deviceMAC={selectedDeviceMac}
+                />
+            </div>}
 
-            <OtaTextFileUploadButton
-            deviceMAC={selectedDeviceMac}
-            />
 
             {/* </FormGroup> */}
 

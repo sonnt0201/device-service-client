@@ -21,7 +21,7 @@ export abstract class IPCControllerBase<
 > implements IIPCController<TIncoming, TOutgoing> {
 
     
-    private _isStarted: boolean = false;
+    protected _isStarted: boolean = false;
 
     abstract channel(): string;
   

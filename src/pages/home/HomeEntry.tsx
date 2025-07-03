@@ -3,7 +3,7 @@ import ScreenDisplay from "./ScreenDisplay";
 import { Controls } from "./Controls";
 import { Paper, Stack } from "@mui/material";
 import BillsTable from "./BillsTable";
-import { IEncodedLog } from "electron/ipc-shared/Log";
+import { IEncodedLog } from "@/ipc-shared/Log";
 
 
 /// post-fix "Entry" as a convention for entry point components of current page
@@ -83,9 +83,9 @@ export const HomeEntry = () => {
         />
       </Paper>
 
-      <Stack direction={"row"} spacing={3} className="w-10/12 mx-auto my-4">
+      <Stack direction={"row"} spacing={3} className="w-10/12 mx-auto align-center my-4">
 
-        <Paper elevation={12} className="w-5/12 mx-auto my-4" >
+        <Paper elevation={12} className="w-2/12 mx-auto my-4" >
           <ScreenDisplay totalCost={totalCost} fuelVolume={fuelVolume} fuelUnitPrice={fuelUnitPrice} />
         </Paper>
 

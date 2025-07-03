@@ -2,7 +2,7 @@ import { Observable } from "../base/Observable";
 import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
 import { createServer, Server, Socket } from "net";
-import { IEventMsg } from "electron/ipc-shared/IEventMsg";
+import { IEventMsg } from "@/ipc-shared/IEventMsg";
 
 
 
@@ -47,7 +47,7 @@ export class EventExchangeDSListener {
 
 
 
-  
+
     /**
      * Send string to all clients connected
      * 
@@ -104,7 +104,7 @@ export class EventExchangeDSListener {
 
                     this.eventMsgNotifier.notify(decoded);
 
-                    this._logger.log("decoded object", chunk);
+                    // this._logger.log("decoded object", chunk);
 
                 }
             });

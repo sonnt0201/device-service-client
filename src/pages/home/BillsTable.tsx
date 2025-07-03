@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
-import { IEncodedLog } from 'electron/ipc-shared/Log';
+import { IEncodedLog } from '@/ipc-shared/Log';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -37,8 +37,8 @@ export default function BillsTable({ rows }: { rows: IEncodedLog[] }) {
     }, [rows]);
 
     return (
-        <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 800,  tableLayout: 'fixed' }} aria-label="customized table" stickyHeader>
+        <TableContainer component={Paper} sx={{maxHeight: 400, overflow: 'auto'}}>
+            <Table sx={{ minWidth: 800,   tableLayout: 'fixed' }} aria-label="customized table" stickyHeader>
                 <TableHead>
                     <TableRow>
                         <StyledTableCell align="center"  sx={{ width: 80 }}>Device MAC</StyledTableCell>

@@ -34,3 +34,4 @@ yarn.lock
 
 # database
 *.db
+logs.db

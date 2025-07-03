@@ -135,7 +135,7 @@ ipcMain.handle('open-win', (_, arg) => {
 
 app.whenReady().then(() => createWindow()).then(() => {
   if (win) {
-    echoController.start();
+    echoController.bindTargetWindow(win).start();
     // Bind the main window to the realtime screen controller
     realtimeScreenController.bindTargetWindow(win);
     // console.log(win);
@@ -145,7 +145,7 @@ app.whenReady().then(() => createWindow()).then(() => {
 
     relaycontroller.bindTargetWindow(win).start();
 
-    // otaController.bindTargetWindow(win).start();
+    otaController.bindTargetWindow(win).start();
    
   }
 })

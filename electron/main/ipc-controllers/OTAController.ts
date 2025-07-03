@@ -1,15 +1,15 @@
-import { IDownloadFirmMsg } from "electron/ipc-shared/IDownloadFirmMsg";
+import { IDownloadFirmMsg } from "@/ipc-shared/IDownloadFirmMsg";
 import { IPCControllerBase } from "../base";
-import { OtaStatusValue } from "../../ipc-shared/IOtaStatus";
+import { OtaStatusValue } from "../../../src/ipc-shared/IOtaStatus";
 import { EventExchangeDSListener } from "../models/EventExchangeDSListener";
 import { IObserver } from "../base/IObserver";
-import { IEventMsg } from "../../ipc-shared/IEventMsg";
-import { MsgTypeValue } from "../../ipc-shared/MessageType";
+import { IEventMsg } from "../../../src/ipc-shared/IEventMsg";
+import { MsgTypeValue } from "../../../src/ipc-shared/MessageType";
 import { IPCControllerBaseV2 } from "../base/IPCControllerBaseV2";
 import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
-import { OtaProcess } from "../../ipc-shared/OtaProcess";
-import { IActiveFirmwareMsg } from "electron/ipc-shared/IActiveFirmwareMsg";
+import { OtaProcess } from "../../../src/ipc-shared/OtaProcess";
+import { IActiveFirmwareMsg } from "@/ipc-shared/IActiveFirmwareMsg";
 
 
 class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
@@ -36,6 +36,12 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
     constructor() {
         super()
 
+        this._logger = new MainLogger("OTAController");
+        this._otaCurrentStep = OtaProcess.NONE;
+        this._tcpDSListener = EventExchangeDSListener.getInstance()
+        this._currentDownloadFirmMsgID = ""
+        this._currentDeviceMAC = ""
+        
         /// observer design pattern
         this._tcpDSListener
             .eventMsgNotifier
@@ -129,8 +135,11 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
     }
 
     on(event: Electron.IpcMainEvent, message: IDownloadFirmMsg): void {
-        //fired when receiving a firm file from renderer
 
+        this._logger?.log("Current process: ", this._otaCurrentStep)
+
+        //fired when receiving a firm file from renderer
+        this._logger?.log("Received txt firm from Renderer, size: ", message.file.length)
         // guard another ongoing ota process
         if (this._otaCurrentStep !== OtaProcess.NONE) {
             this.sendMsgToTargetWindow({
