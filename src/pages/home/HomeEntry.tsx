@@ -70,7 +70,7 @@ export const HomeEntry = () => {
   return (
 
     <div className="home flex flex-col items-center justify-center">
-      <Paper className="w-10/12 p-1" >
+      <Paper className="w-full p-1" >
         <Controls
           availableDeviceMacs={Array.from(availableDeviceMacs)}
           selectedDeviceMac={selectedDeviceMac}

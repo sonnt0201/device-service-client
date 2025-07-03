@@ -132,13 +132,14 @@ export const OtaBinFileUploadButton = ({
     const cancelFileUploaded = () => {
         setFirmFileName("")
         setFirmText("")
+        setProcess(OtaProcess.NONE)
     }
 
     function downloadTextFile(content: string, filename: string) {
         const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
         const url = URL.createObjectURL(blob);
 
-       
+
 
         const txtFilename = filename.replace(/\.bin$/i, ".txt");
 
@@ -177,21 +178,24 @@ export const OtaBinFileUploadButton = ({
                     id="button: start ota with bin file"
                     variant="contained"
                     component="label"
-                    sx={{ height: 40, mx: 2 }}
+                    sx={{ height: 40, mx: 1 }}
                     disabled={disableOTA}
 
                     onClick={() => startOTA()}
 
-                > Cập nhật </Button>
+                > {process === OtaProcess.NONE && "Cập nhật"   } 
+                {process === OtaProcess.DOWNLOADING_FIRM && "Gửi firmware ..."}
+                {process === OtaProcess.ACTIVATING_FIRM && "Kích hoạt firmware ..."}
+                </Button>
             }
 
             {
-                firmFileName &&
+                firmFileName && process === OtaProcess.NONE &&
                 <Button
                     id="button: download final base64 content file"
                     variant="outlined"
                     component="label"
-                    sx={{ height: 40, mx: 2 }}
+                    sx={{ height: 40, mx: 1 }}
                     disabled={disableOTA}
 
                     onClick={() => downloadTextFile(firmText, firmFileName)}
@@ -204,7 +208,11 @@ export const OtaBinFileUploadButton = ({
                 firmFileName && <Button
                     variant="outlined"
                     color="error"
-                    disabled={disableOTA}
+                    // disabled={disableOTA}
+                    sx={{
+                        mx: 1
+                    }
+                    }
                     onClick={() => cancelFileUploaded()}
 
                 >
@@ -217,6 +225,7 @@ export const OtaBinFileUploadButton = ({
 
                 firmFileName && <Typography
                     alignContent={"center"}
+                    color="success"
                     sx={{ mx: 2 }}
                 >{firmFileName}</Typography>
 

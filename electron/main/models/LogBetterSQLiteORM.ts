@@ -2,13 +2,26 @@ import Database from "better-sqlite3";
 import { ISimpleSyncORM } from "../base/ISimpleSyncORM";
 import { IEncodedLog } from "../../../src/ipc-shared/Log";
 import { IORMTimestampFilter } from "@/ipc-shared/IORMTimestampFilter";
+import { GlobalSqliteDatabase } from "./GlobalSqliteDatabase";
 
 
 export class LogBetterSQLiteORM implements ISimpleSyncORM<IEncodedLog> {
-  private db: Database.Database;
 
-  constructor(dbPath: string = "logs.db") {
-    this.db = new Database(dbPath);
+
+  private static instance: LogBetterSQLiteORM;
+  private db: Database.Database = GlobalSqliteDatabase;
+
+  // 🌟 Singleton accessor
+  public static getInstance(): LogBetterSQLiteORM {
+    if (!LogBetterSQLiteORM.instance) {
+      LogBetterSQLiteORM.instance = new LogBetterSQLiteORM();
+    }
+    return LogBetterSQLiteORM.instance;
+  }
+
+  
+  private constructor() {
+   
 
     // Create table if not exists
     this.db.prepare(`
@@ -114,29 +127,45 @@ export class LogBetterSQLiteORM implements ISimpleSyncORM<IEncodedLog> {
     return result.changes > 0;
   }
 
-  async readByTimestamp(filter: IORMTimestampFilter = {
+  readByTimestamp(filter: IORMTimestampFilter = {
     beginTs: 0,
     endTs: Date.now(),
     limit: 1000,
     priority: "newest"
-  }) {
+  }): IEncodedLog[] {
 
-    if (!filter.beginTs) filter.beginTs = 0;
-    if (!filter.endTs) filter.endTs = 0;
-
+    // Set defaults if undefined
+    const beginTs = filter.beginTs ?? 0;
+    const endTs = filter.endTs ?? Date.now();
+    const limit = filter.limit ?? 1000;
     const order = filter.priority === "oldest" ? "ASC" : "DESC";
 
-    const stmt = this.db.prepare(`
+    let query = `
     SELECT * FROM logs
     WHERE timestamp BETWEEN ? AND ?
-    ORDER BY timestamp ${order}
-    LIMIT ?
-  `);
+  `;
 
-    const rows = stmt.all(filter.beginTs, filter.endTs, filter.limit);
+    const params: any[] = [beginTs, endTs];
+
+    // Add device_id filter if provided
+    if (filter.deviceID) {
+      query += ` AND device_id = ?`;
+      params.push(filter.deviceID);
+    }
+
+    query += ` ORDER BY timestamp ${order} LIMIT ?`;
+    params.push(limit);
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...params);
 
     return rows as IEncodedLog[];
-
   }
 
+
+
+
+
+
 }
+

@@ -68,7 +68,7 @@ export const Controls = (
      */
     const bindIPCListeners = () => {
         window.ipcRenderer.onRelayEvent((_, relayReport: IReportRelayMsg) => {
-
+            
             /// guard device id
             if (!relayReport.device_id) {
                 console.log("Error relayReport Format, check the JSON received from IPC Main");

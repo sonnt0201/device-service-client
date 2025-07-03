@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import { IEncodedLog } from './ipc-shared/Log';
+
 // const ipcRenderer = import('electron').IpcRenderer;
 
 interface Window {
@@ -41,7 +43,9 @@ interface Window {
       }) => void
     ) => void;
 
-
+    readLogsByTimestampRange: (
+      filter: IORMTimestampFilter
+    ) => Promise<IEncodedLog[]>;
 
     removeAllListener: () => void
 

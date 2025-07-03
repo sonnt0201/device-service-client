@@ -6,6 +6,7 @@ import { ISetRelayMsg } from '@/ipc-shared/ISetRelayMsg'
 import { IEncodedLog } from '@/ipc-shared/Log'
 import { OtaProcess } from '@/ipc-shared/OtaProcess'
 import { realtimeScreenController } from 'electron/main/ipc-controllers/RealtimeScreenController'
+import { IORMTimestampFilter } from '@/ipc-shared/IORMTimestampFilter'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -70,6 +71,10 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     }) => void
   ) => ipcRenderer.on('ota', callback),
   // ================= END: OTA ===================
+
+  readLogsByTimestampRange: (
+    filter: IORMTimestampFilter
+  ) => ipcRenderer.invoke('logs', filter),
 
   removeAllListener: ()=> {ipcRenderer.removeAllListeners()}
 

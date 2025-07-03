@@ -27,7 +27,7 @@ any, any
     private _targetWindow?: BrowserWindow | null; ///< Target window that this controller streams screen & event to.
     private _logger: IMainLogger = new MainLogger("LogEventController");
     private _eventExchangeDSListener: EventExchangeDSListener = EventExchangeDSListener.getInstance(); ///< Device Service client for event exchange.
-    private _logsORM: ISimpleSyncORM<IEncodedLog> = new LogBetterSQLiteORM();
+    private _logsORM: ISimpleSyncORM<IEncodedLog> = LogBetterSQLiteORM.getInstance();
     
     channel(): string {
         return "logi-log-event";
