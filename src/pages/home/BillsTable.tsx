@@ -9,6 +9,8 @@ import Paper from '@mui/material/Paper';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import { IEncodedLog } from '@/ipc-shared/Log';
+import { TableFooter, TablePagination } from '@mui/material';
+import { TablePaginationActions } from '@/components/update/TablePaginationActions';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -29,7 +31,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     },
 }));
 
-export default function BillsTable({ rows }: { rows: IEncodedLog[] }) {
+export default function BillsTable({ 
+    rows,
+    page,
+    rowsPerPage,
+    handleChangePage,
+    handleChangeRowsPerPage,
+ }: { rows: IEncodedLog[]
+     page: number,
+    rowsPerPage: number,
+    handleChangePage: (event: React.MouseEvent<HTMLButtonElement> | null, page: number) => void,
+    handleChangeRowsPerPage?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>,
+  }) {
 
     useEffect(() => {
         // console.log("Row length in BillsTable: ", rows.length);
@@ -69,6 +82,29 @@ export default function BillsTable({ rows }: { rows: IEncodedLog[] }) {
                         </StyledTableRow>
                     ))}
                 </TableBody>
+
+                <TableFooter>
+
+                     <TablePagination
+              rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+              colSpan={3}
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              slotProps={{
+                select: {
+                  inputProps: {
+                    'aria-label': 'Số hàng/trang',
+                  },
+                  native: true,
+                },
+              }}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              ActionsComponent={TablePaginationActions}
+            />
+
+                </TableFooter>
             </Table>
         </TableContainer>
     );

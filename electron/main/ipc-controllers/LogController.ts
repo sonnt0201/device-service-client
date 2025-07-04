@@ -26,3 +26,8 @@ class LogController extends IPCControllerBase<IORMTimestampFilter, IEncodedLog[]
 
 
 }
+
+/**
+ * ipc main Controller that helps renderer retrieve log in database
+ */
+export const logController = new LogController();

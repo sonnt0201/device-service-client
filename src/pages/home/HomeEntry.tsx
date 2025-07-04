@@ -9,6 +9,7 @@ import { IEncodedLog } from "@/ipc-shared/Log";
 /// post-fix "Entry" as a convention for entry point components of current page
 export const HomeEntry = () => {
 
+  // ======================= BEGIN: STATES, VARS OR REF =====================
 
   const [totalCost, setTotalCost] = useState("_");
   const [fuelVolume, setFuelVolume] = useState("_");
@@ -20,6 +21,14 @@ export const HomeEntry = () => {
 
   const [selectedDeviceMac, setSelectedDeviceMac] = useState<string>("");
 
+
+  
+
+  /** Newest log of the {@link selectedDeviceMac} that Client UI receives from device service */
+  const [newestLog, setNewestLog] = useState<IEncodedLog>()
+  // ======================== END: STATES, VARS OR REF ========================
+
+  // ======================== BEGIN: USE EFFECTS ===========================
   useEffect(() => {
     window.ipcRenderer.onRealtimeScreenMsg((_, msg) => {
       if (!msg.screen) return;
@@ -65,8 +74,15 @@ export const HomeEntry = () => {
     // console.log("Available device MACs: ", availableDeviceMacs);
   }, [availableDeviceMacs, selectedDeviceMac]);
 
+  // ============================= END: USE EFFECT ======================================
 
+  // =============================== BEGIN: ULTIL FUNCTIONS =============================
 
+ 
+
+  // ============================== END: ULTIL FUNCTIONS ======================
+
+  // =========================== RETURN COMPONENTS ===============================
   return (
 
     <div className="home flex flex-col items-center justify-center">
@@ -91,7 +107,19 @@ export const HomeEntry = () => {
 
 
         <Paper className="w-8/12 h-20 mx-auto my-4">
-          <BillsTable rows={Array.from(gasLogs).filter(log => log.device_id == selectedDeviceMac)} />
+          <BillsTable
+            rows={Array.from(gasLogs).filter(log => log.device_id == selectedDeviceMac)}
+
+            page={0}
+
+            rowsPerPage={0}
+
+            handleChangePage={function (event: React.MouseEvent<HTMLButtonElement> | null, page: number): void {
+              throw new Error("Function not implemented.");
+            }}
+
+            handleChangeRowsPerPage={ }
+          />
 
         </Paper>
       </Stack>

@@ -9,6 +9,7 @@ import { realtimeScreenController } from './ipc-controllers/RealtimeScreenContro
 import { logEventController } from './ipc-controllers/LogEventController'
 import { relaycontroller } from './ipc-controllers/RelayController'
 import { otaController } from './ipc-controllers/OTAController'
+import { logController } from './ipc-controllers/LogController'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -147,6 +148,7 @@ app.whenReady().then(() => createWindow()).then(() => {
 
     otaController.bindTargetWindow(win).start();
    
+    logController.start();
   }
 })
 
