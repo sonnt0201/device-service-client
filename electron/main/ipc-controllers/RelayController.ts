@@ -60,7 +60,7 @@ class RelayController extends IPCControllerBase<
 
         EventExchangeDSListener
             .getInstance()
-            .send(JSON.stringify(messageToSendDS));
+            .send(JSON.stringify(messageToSendDS.content));
     }
 
     bindTargetWindow(win: BrowserWindow | null): RelayController {

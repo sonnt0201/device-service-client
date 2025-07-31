@@ -63,7 +63,7 @@ export const HomeEntry = () => {
     }
 
     // console.log("Available device MACs: ", availableDeviceMacs);
-  }, [availableDeviceMacs, selectedDeviceMac]);
+  }, [availableDeviceMacs]);
 
 
 
@@ -85,7 +85,7 @@ export const HomeEntry = () => {
 
       <Stack direction={"row"} spacing={3} className="w-10/12 mx-auto align-center my-4">
 
-        <Paper elevation={12} className="w-2/12 mx-auto my-4" >
+        <Paper elevation={12} className="w-4/12 mx-auto my-4" >
           <ScreenDisplay totalCost={totalCost} fuelVolume={fuelVolume} fuelUnitPrice={fuelUnitPrice} />
         </Paper>
 

@@ -33,8 +33,8 @@ export const Controls = (
     const [lively, setLively] = useState(true);
     // const [currentDeviceId, setCurrentDeviceId] = useState<string>("");
     // const [availableDevices, setAvailableDevices] = useState<Device[]>([]);
-    const [relay1, setRelay1] = useState<boolean>(true);
-    const [relay2, setRelay2] = useState<boolean>(true);
+    const [relay1, setRelay1] = useState<boolean>(false);
+    const [relay2, setRelay2] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -191,7 +191,7 @@ export const Controls = (
 
             <FormControlLabel control={<Switch value={relay1}
 
-                defaultChecked
+                checked={relay1}
                 onChange={(_, checked: boolean) => setRelay1(checked)}
 
                 disabled={!selectedDeviceMac}
@@ -199,7 +199,7 @@ export const Controls = (
 
             <FormControlLabel control={<Switch
                 value={relay2}
-                defaultChecked
+                checked={relay2}
                 onChange={(_, checked: boolean) => setRelay2(checked)}
 
                 disabled={!selectedDeviceMac}

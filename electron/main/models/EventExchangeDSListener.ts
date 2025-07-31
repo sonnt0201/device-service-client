@@ -72,7 +72,7 @@ export class EventExchangeDSListener {
 
         for (const socket of this._clients) {
             if (!socket.destroyed) {
-                socket.write(msg + '\r\n'); // \r\n as message delimiter
+                socket.write(msg + '\r\n\r\n'); // \r\n as message delimiter
                 this._logger.log("Sent message to device:", msg);
             }
         }

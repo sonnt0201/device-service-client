@@ -72,7 +72,7 @@ any, any
 
         /// Message type filter
         if ( data.content.message_type !== MsgTypeValue.LOG_SUBLOG) {
-            this._logger.warn(`Received message with unsupported type: ${data.content}`);
+            this._logger.warn(`Received message with unsupported type: ${JSON.stringify(data.content)}`);
             return;
         }
 

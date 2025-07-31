@@ -47,6 +47,13 @@ export const OtaBinFileUploadButton = ({
 
         window.ipcRenderer.onOtaMsg((_, msg) => {
             console.log("OTA: Receive from IPC MAIN")
+
+            if (process === OtaProcess.ACTIVATING_FIRM && msg.process === OtaProcess.NONE) {
+                // firmware update successfully
+                
+                resetOta()
+            }
+
             setOtaStatusValue(msg.status)
             setProcess(msg.process)
         })
@@ -151,6 +158,11 @@ export const OtaBinFileUploadButton = ({
         URL.revokeObjectURL(url); // Clean up
     }
 
+    const resetOta = () => {
+        setFirmFileName("")
+        setFirmText("")
+
+    }
 
     return (
         <Stack direction={"row"}>

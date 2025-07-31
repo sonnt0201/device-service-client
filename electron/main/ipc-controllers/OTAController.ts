@@ -41,7 +41,7 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
         this._tcpDSListener = EventExchangeDSListener.getInstance()
         this._currentDownloadFirmMsgID = ""
         this._currentDeviceMAC = ""
-        
+
         /// observer design pattern
         this._tcpDSListener
             .eventMsgNotifier
@@ -106,7 +106,7 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
             }
 
             // send to device service
-            this._tcpDSListener.send(JSON.stringify(msgToSendDS))
+            this._tcpDSListener.send(JSON.stringify(msgToSendDS.content))
 
             this.sendMsgToTargetWindow({
                 status: data.content.status_code,
@@ -114,17 +114,25 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
             })
 
 
+            // because device service now has error: not sending success noti when update ota successfully, 
+            // process is auto jump to NONE state as notification of successfully ota
+            this._resetOTAProcess();
+
+
+
+
+
         }
 
         // in case msg is response from active firmware request
         if (data.id === this._currentDownloadFirmMsgID
             && this._otaCurrentStep === OtaProcess.ACTIVATING_FIRM) {
-                // firmware updated, work done, reset all
-                this._currentDeviceMAC = ""
-                this._currentDownloadFirmMsgID = ""
-                this._otaCurrentStep = OtaProcess.NONE
+            // firmware updated, work done, reset all
+            this._currentDeviceMAC = ""
+            this._currentDownloadFirmMsgID = ""
+            this._otaCurrentStep = OtaProcess.NONE
 
-                
+
         }
 
 
@@ -165,14 +173,24 @@ class OTAController extends IPCControllerBaseV2<IDownloadFirmMsg, {
             content: message
         }
 
-        this._tcpDSListener.send(JSON.stringify(msgToSendDS))
+        this._tcpDSListener.send(JSON.stringify(msgToSendDS.content))
 
         this.sendMsgToTargetWindow({
             process: this._otaCurrentStep
         })
+
+
     }
 
-
+    _resetOTAProcess() {
+        this._currentDeviceMAC = ""
+        this._currentDownloadFirmMsgID = ""
+        this._otaCurrentStep = OtaProcess.NONE
+        this.sendMsgToTargetWindow({
+            status: 0,
+            process: OtaProcess.NONE
+        })
+    }
 
 }
 
