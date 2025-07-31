@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import UpdateElectron from '@/components/update'
 import logoVite from './assets/logo-vite.svg'
 import logoElectron from './assets/logo-electron.svg'
@@ -9,16 +9,26 @@ import { CustomAppBar } from './CustomAppBar'
 
 function App() {
 
+  useEffect(() => {
+    console.log("Start app!")
+    window.ipcRenderer.echo("Hello World").then((val) => console.log(val))
+  }, [])
+
   return (
     <div className='w-12/12 h-full flex flex-col '>
       <BrowserRouter>
         <CustomAppBar />
 
         <div className='mt-10'>
-          <Routes>
-            <Route path="/" element={<HomeEntry />} />
-            {/* <Route path="/settings" element={<Settings />} /> */}
-          </Routes>
+          <HomeEntry />
+          {/* <HashRouter> */}
+            {/* <Routes> */}
+              {/* <Route path="/" element={<HomeEntry />} /> */}
+              {/* <Route path="/settings" element={<Settings />} /> */}
+            {/* </Routes> */}
+
+          {/* </HashRouter> */}
+
         </div>
 
       </BrowserRouter>

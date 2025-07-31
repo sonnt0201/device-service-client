@@ -4,14 +4,18 @@ import { MainLogger } from "../base/MainLog";
 import { IMainLogger } from "../base/IMainLog";
 import { IObserver } from "../base/IObserver";
 import { EventExchangeDSListener } from "../models/EventExchangeDSListener";
-import { IEventMsg } from "../../ipc-shared/IEventMsg";
-import { MsgTypeValue } from "../../ipc-shared/IHasMsgType";
-import { IEncodedLog } from "electron/ipc-shared/Log";
+import { IEventMsg } from "../../../src/ipc-shared/IEventMsg";
+import { MsgTypeValue } from "../../../src/ipc-shared/MessageType";
+import { IEncodedLog } from "@/ipc-shared/Log";
 import { ISimpleORM } from "../base/ISimpleORM";
-import { LogSQLiteORM } from "../models/LogSQLiteORM";
+// import { LogSQLiteORM } from "../models/LogSQLiteORM";
+import { ISimpleSyncORM } from "../base/ISimpleSyncORM";
+import { LogBetterSQLiteORM } from "../models/LogBetterSQLiteORM";
 
 
-class LogEventController extends IPCControllerBase
+class LogEventController extends IPCControllerBase<
+any, any
+>
     implements IObserver<IEventMsg>
 {
 
@@ -23,7 +27,7 @@ class LogEventController extends IPCControllerBase
     private _targetWindow?: BrowserWindow | null; ///< Target window that this controller streams screen & event to.
     private _logger: IMainLogger = new MainLogger("LogEventController");
     private _eventExchangeDSListener: EventExchangeDSListener = EventExchangeDSListener.getInstance(); ///< Device Service client for event exchange.
-    private _logsORM: ISimpleORM<IEncodedLog> = new LogSQLiteORM();
+    private _logsORM: ISimpleSyncORM<IEncodedLog> = LogBetterSQLiteORM.getInstance();
     
     channel(): string {
         return "logi-log-event";
@@ -68,7 +72,7 @@ class LogEventController extends IPCControllerBase
 
         /// Message type filter
         if ( data.content.message_type !== MsgTypeValue.LOG_SUBLOG) {
-            this._logger.warn(`Received message with unsupported type: ${data.content}`);
+            this._logger.warn(`Received message with unsupported type: ${JSON.stringify(data.content)}`);
             return;
         }
 

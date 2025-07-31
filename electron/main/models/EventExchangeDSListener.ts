@@ -2,7 +2,7 @@ import { Observable } from "../base/Observable";
 import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
 import { createServer, Server, Socket } from "net";
-import { IEventMsg } from "electron/ipc-shared/IEventMsg";
+import { IEventMsg } from "@/ipc-shared/IEventMsg";
 
 
 
@@ -14,9 +14,17 @@ import { IEventMsg } from "electron/ipc-shared/IEventMsg";
  * 
  * Messages received are notified to observers via `eventMsgNotifier` using [Observable Design Pattern]
  * 
+ * Message notified via `eventMsgNotifier` has `IEventMsg` type
+ * 
  * If a IPCController receives a message, should subcribe and have a filter to choose what messag_type to handle.
  */
 export class EventExchangeDSListener {
+
+    /**
+     * [Observable Design Pattern] Notifier for gas log events. (pump session)
+     */
+    public eventMsgNotifier: Observable<IEventMsg> = new Observable<IEventMsg>();
+
 
     private static _instance: EventExchangeDSListener;
     private _logger: IMainLogger = new MainLogger("EventExchangeDSClient");
@@ -39,10 +47,6 @@ export class EventExchangeDSListener {
 
 
 
-    /**
-     * Notifier for gas log events. (pump session)
-     */
-    public eventMsgNotifier: Observable<IEventMsg> = new Observable<IEventMsg>();
 
     /**
      * Send string to all clients connected
@@ -68,7 +72,7 @@ export class EventExchangeDSListener {
 
         for (const socket of this._clients) {
             if (!socket.destroyed) {
-                socket.write(msg + '\r\n'); // \r\n as message delimiter
+                socket.write(msg + '\r\n\r\n'); // \r\n as message delimiter
                 this._logger.log("Sent message to device:", msg);
             }
         }
@@ -100,7 +104,7 @@ export class EventExchangeDSListener {
 
                     this.eventMsgNotifier.notify(decoded);
 
-                    this._logger.log("decoded object", chunk);
+                    // this._logger.log("decoded object", chunk);
 
                 }
             });

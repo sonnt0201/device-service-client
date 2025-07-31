@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+
+
 // const ipcRenderer = import('electron').IpcRenderer;
 
 interface Window {
@@ -22,15 +24,30 @@ interface Window {
       callback: (event: Electron.IpcRendererEvent, gasLog: IEncodedLog) => void
     ) => void;
 
-     onRelayEvent: (
-        callback: (event: Electron.IpcRendererEvent, relayReport: IReportRelayMsg) => void
-      ) => void;
+    onRelayEvent: (
+      callback: (event: Electron.IpcRendererEvent, relayReport: IReportRelayMsg) => void
+    ) => void;
 
-      sendSetRelayMsg: (
-          msg: ISetRelayMsg
-        ) => void
+    sendSetRelayMsg: (
+      msg: ISetRelayMsg
+    ) => void;
 
-     removeAllListener: ()=> void
+    sendOtaFirmware: (
+      otaMsg: IDownloadFirmMsg
+    ) => void;
+
+    onOtaMsg: (
+      callback: (event: Electron.IpcRendererEvent, msg: {
+        status?: OtaStatusValue
+        process: OtaProcess
+      }) => void
+    ) => void;
+
+    readLogsByTimestampRange: (
+      filter: IORMTimestampFilter
+    ) => Promise<IEncodedLog[]>;
+
+    removeAllListener: () => void
 
   },
 

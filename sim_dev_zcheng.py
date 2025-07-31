@@ -303,7 +303,12 @@ def main():
                 total_frames = 0
                 frames = []
                 # init screen data 
-                end_volume_random = random.randint(3, 40)
+                end_volume_random = random.randint(3, 10)
+
+                cnt, f = dev.gen_preset_screen(cost='', volume= end_volume_random, price= 20.0, displayTimeMs = 2000)
+                total_frames += cnt
+                frames += f
+
                 cnt, f = dev.gen_data(resetScr_displayTimeMs = 100, start_volume = 0, end_volume = end_volume_random, delta_volume = 0.01, price = 20.0, pauseScr_displayTimeMs = 6000)
                 total_frames += cnt
                 frames += f
@@ -312,9 +317,7 @@ def main():
                 # total_frames += cnt
                 # frames += f
 
-                cnt, f = dev.gen_preset_screen(cost='', volume= 10.0, price= 20.0, displayTimeMs = 2000)
-                total_frames += cnt
-                frames += f
+               
                 
             isDone = sim.send_data(frames, total_frames, dev.getScreenFrameSize())
 

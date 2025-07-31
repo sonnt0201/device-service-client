@@ -2,6 +2,8 @@ import { IIPCController } from "./IIPCController";
 import { ipcMain, IpcMainInvokeEvent, IpcMainEvent } from "electron";
 
 /**
+ * Dependencies: {@link IIPCController}
+ * 
  * Generic base class for IPC controllers in Electron.
  * 
  * Implement to make an IPC Controller object listening in returned channel name in channel method.
@@ -14,12 +16,12 @@ import { ipcMain, IpcMainInvokeEvent, IpcMainEvent } from "electron";
  * TOutgoing - Type of the message returned from `handle()` back to the renderer.
  */
 export abstract class IPCControllerBase<
-    TIncoming = any,
-    TOutgoing = any
+    TIncoming ,
+    TOutgoing 
 > implements IIPCController<TIncoming, TOutgoing> {
 
     
-    private _isStarted: boolean = false;
+    protected _isStarted: boolean = false;
 
     abstract channel(): string;
   

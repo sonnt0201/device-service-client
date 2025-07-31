@@ -24,6 +24,8 @@ export const CustomAppBar: React.FC = () => {
         return 'Raw Data';
       case '/realtime':
         return 'Hiển thị';
+      case  '/ota':
+        return "Cập nhật firmware"
       default:
         return '';
     }
@@ -51,6 +53,15 @@ export const CustomAppBar: React.FC = () => {
           >
             Trang chủ
           </Typography>
+{/* 
+          <Typography
+            variant="h6"
+            component={Link}
+            to="/ota"
+            sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+          >
+            Cập nhật firmware
+          </Typography> */}
 
           <Typography variant="h5" className="px-4">
             {getTitle()}

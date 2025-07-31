@@ -1,15 +1,15 @@
-import { ISetRelayMsg } from "electron/ipc-shared/ISetRelayMsg";
+import { ISetRelayMsg } from "@/ipc-shared/ISetRelayMsg";
 import { IPCControllerBase } from "../base";
-import { IReportRelayMsg } from "electron/ipc-shared/IReportRelayMsg";
+import { IReportRelayMsg } from "@/ipc-shared/IReportRelayMsg";
 import { IObserver } from "../base/IObserver";
-import { IEventMsg } from "electron/ipc-shared/IEventMsg";
+import { IEventMsg } from "@/ipc-shared/IEventMsg";
 import { BrowserWindow } from "electron/main";
 import { EventExchangeDSListener } from "../models/EventExchangeDSListener";
 import { IObservable } from "../base/IObservable";
 import { webContents } from "electron";
 import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
-import { MsgTypeValue } from "../../ipc-shared/IHasMsgType";
+import { MsgTypeValue } from "../../../src/ipc-shared/MessageType";
 
 class RelayController extends IPCControllerBase<
     ISetRelayMsg,
@@ -60,7 +60,7 @@ class RelayController extends IPCControllerBase<
 
         EventExchangeDSListener
             .getInstance()
-            .send(JSON.stringify(messageToSendDS));
+            .send(JSON.stringify(messageToSendDS.content));
     }
 
     bindTargetWindow(win: BrowserWindow | null): RelayController {

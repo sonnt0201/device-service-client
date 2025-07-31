@@ -1,8 +1,12 @@
-import { ipcRenderer, contextBridge } from 'electron'
-import { IReportRelayMsg } from 'electron/ipc-shared/IReportRelayMsg'
-import { ISetRelayMsg } from 'electron/ipc-shared/ISetRelayMsg'
-import { IEncodedLog } from 'electron/ipc-shared/Log'
+import { ipcRenderer, contextBridge, IpcRenderer } from 'electron'
+import { IDownloadFirmMsg } from '@/ipc-shared/IDownloadFirmMsg'
+import { OtaStatusValue } from '@/ipc-shared/IOtaStatus'
+import { IReportRelayMsg } from '@/ipc-shared/IReportRelayMsg'
+import { ISetRelayMsg } from '@/ipc-shared/ISetRelayMsg'
+import { IEncodedLog } from '@/ipc-shared/Log'
+import { OtaProcess } from '@/ipc-shared/OtaProcess'
 import { realtimeScreenController } from 'electron/main/ipc-controllers/RealtimeScreenController'
+import { IORMTimestampFilter } from '@/ipc-shared/IORMTimestampFilter'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -24,7 +28,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
 
 
-  // ================== USER-DEFINED APIs ===================
+  // ================== USER-DEFINED APIs (CAUTIOUS: ALL THOSE CODES ARE PUT ON RENDERER-SIDE) ===================
 
   echo: (message: string) => ipcRenderer.invoke('echo', message),
 
@@ -54,6 +58,23 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   sendSetRelayMsg: (
     msg: ISetRelayMsg
   ) => ipcRenderer.send('relay', msg),
+
+  // ================== BEGIN: OTA ==================
+  sendOtaFirmware: (
+   otaMsg: IDownloadFirmMsg
+  ) => ipcRenderer.send('ota', otaMsg),
+
+  onOtaMsg: (
+    callback: (event: Electron.IpcRendererEvent, msg:  {
+        status?: OtaStatusValue
+        process: OtaProcess
+    }) => void
+  ) => ipcRenderer.on('ota', callback),
+  // ================= END: OTA ===================
+
+  readLogsByTimestampRange: (
+    filter: IORMTimestampFilter
+  ) => ipcRenderer.invoke('logs', filter),
 
   removeAllListener: ()=> {ipcRenderer.removeAllListeners()}
 
