@@ -28,7 +28,7 @@ export default function ScreenDisplay({
                         <React.Fragment>
                             <Typography
                                 sx={{ display: 'inline' }}
-                                variant="h6"
+                                variant="body1"
                             >
                                 Tiền
                             </Typography>
@@ -38,7 +38,7 @@ export default function ScreenDisplay({
                     secondary={
                         <React.Fragment>
                             <Typography
-                                sx={{ display: 'inline', fontFamily: "Consolas, monospace", fontSize: "2rem", fontWeight: "bold"  }}
+                                sx={{ display: 'inline', fontFamily: "Consolas, monospace", fontSize: "1.5rem", fontWeight: "bold"  }}
                                 variant='body2'
                                 color="text.primary"
                             >
@@ -57,7 +57,7 @@ export default function ScreenDisplay({
                         <React.Fragment>
                             <Typography
                                 sx={{ display: 'inline' }}
-                                variant="h6"
+                                variant="body1"
                             >
                                 Lít
                             </Typography>
@@ -67,7 +67,7 @@ export default function ScreenDisplay({
                     secondary={
                         <React.Fragment>
                             <Typography
-                                sx={{ display: 'inline', fontFamily: "Consolas, monospace", fontSize: "2rem", fontWeight: "bold"  }}
+                                sx={{ display: 'inline', fontFamily: "Consolas, monospace", fontSize: "1.5rem", fontWeight: "bold"  }}
                                 variant='body2'
                                 color="text.primary"
                             >
@@ -86,7 +86,7 @@ export default function ScreenDisplay({
                         <React.Fragment>
                             <Typography
                                 sx={{ display: 'inline' }}
-                                variant="h6"
+                                variant="body1"
                             >
                                 Đơn giá
                             </Typography>
@@ -96,7 +96,7 @@ export default function ScreenDisplay({
                     secondary={
                         <React.Fragment>
                             <Typography
-                                sx={{ display: 'inline', fontFamily: "Consolas, monospace",  fontSize: "2rem", fontWeight: "bold" }}
+                                sx={{ display: 'inline', fontFamily: "Consolas, monospace",  fontSize: "1.5rem", fontWeight: "bold" }}
                                   variant='body2'
                                 color="text.primary"
                             >

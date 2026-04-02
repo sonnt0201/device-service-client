@@ -7,5 +7,7 @@
 interface IRealtimeScreenDSClientMessage {
     event: "screen" | "screen-error" | "connection-closed" | "connection-error" | "connection-established",
     screen?: IRealtimeScreen,
+    keyboard_screen?: IRealtimeKeyboardScreen,
     meta?: string; ///< Additional info if exception happened 
 }
+

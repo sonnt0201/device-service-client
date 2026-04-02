@@ -3,6 +3,7 @@ import { IMainLogger } from "../base/IMainLog";
 import { MainLogger } from "../base/MainLog";
 import { createServer, Server, Socket } from "net";
 import { IEventMsg } from "@/ipc-shared/IEventMsg";
+import { TcpRawLogBus } from "./TcpRawLogBus";
 
 
 
@@ -35,6 +36,8 @@ export class EventExchangeDSListener {
 
     // Track connected clients
     private _clients: Set<Socket> = new Set();
+
+    private _tcpRawLogBus: TcpRawLogBus = TcpRawLogBus.getInstance();
 
     private constructor() { }
 
@@ -74,6 +77,13 @@ export class EventExchangeDSListener {
             if (!socket.destroyed) {
                 socket.write(msg + '\r\n\r\n'); // \r\n as message delimiter
                 this._logger.log("Sent message to device:", msg);
+
+                // publish raw TCP send log
+                this._tcpRawLogBus.notify({
+                    direction: "send",
+                    source: "event",
+                    payload: msg,
+                });
             }
         }
     }
@@ -98,6 +108,13 @@ export class EventExchangeDSListener {
                 for (const chunk of chunks) {
 
                     if (chunk.length === 0) break; // skip empty lines
+
+                    // publish raw TCP receive log
+                    this._tcpRawLogBus.notify({
+                        direction: "recv",
+                        source: "event",
+                        payload: chunk,
+                    });
 
 
                     const decoded: IEventMsg = JSON.parse(chunk);

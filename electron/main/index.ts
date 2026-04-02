@@ -9,6 +9,10 @@ import { realtimeScreenController } from './ipc-controllers/RealtimeScreenContro
 import { logEventController } from './ipc-controllers/LogEventController'
 import { relaycontroller } from './ipc-controllers/RelayController'
 import { otaController } from './ipc-controllers/OTAController'
+import { tcpRawLogController } from './ipc-controllers/TcpRawLogController'
+import { deviceCacheController } from './ipc-controllers/DeviceCacheController'
+import { keyboardVirtualButtonController } from './ipc-controllers/KeyboardVirtualButtonController'
+import { keyboardModeController } from './ipc-controllers/KeyboardModeController'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -146,6 +150,14 @@ app.whenReady().then(() => createWindow()).then(() => {
     relaycontroller.bindTargetWindow(win).start();
 
     otaController.bindTargetWindow(win).start();
+
+    tcpRawLogController.bindTargetWindow(win).start();
+
+    deviceCacheController.bindTargetWindow(win).start();
+
+    keyboardModeController.bindTargetWindow(win).start();
+
+    keyboardVirtualButtonController.start();
    
   }
 })

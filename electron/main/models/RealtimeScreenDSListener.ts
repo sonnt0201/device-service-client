@@ -3,6 +3,7 @@ import { MainLogger } from "../base/MainLog";
 import { Observable } from "../base/Observable";
 
 import { Socket, createServer, Server } from "net"
+import { TcpRawLogBus } from "./TcpRawLogBus";
 
 
 /**
@@ -18,6 +19,7 @@ export class RealtimeScreenDSListener extends Observable<IRealtimeScreenDSClient
 
   // Track connected clients
     private _clients: Set<Socket> = new Set();
+        private _tcpRawLogBus: TcpRawLogBus = TcpRawLogBus.getInstance();
     private constructor() {
         super();
     }
@@ -61,19 +63,23 @@ export class RealtimeScreenDSListener extends Observable<IRealtimeScreenDSClient
                 for (const chunk of chunks) {
                     if (!chunk.trim()) continue; // skip empty lines
 
-                    const decoded = this._decodeRealtimeMessage(chunk);
+                    // publish raw TCP receive log
+                    this._tcpRawLogBus.notify({
+                        direction: "recv",
+                        source: "realtime",
+                        payload: chunk,
+                    });
 
-                    if (!decoded) {
+                    const decodedMessages = this._decodeRealtimeMessages(chunk);
+
+                    if (decodedMessages.length === 0) {
                         this._logger.error("Failed to decode message:", chunk);
                         super.notify({
                             event: "screen-error",
                             meta: chunk
                         });
                     } else {
-                        super.notify({
-                            event: "screen",
-                            screen: decoded
-                        });
+                        decodedMessages.forEach((message) => super.notify(message));
                     }
                 }
             });
@@ -110,50 +116,54 @@ export class RealtimeScreenDSListener extends Observable<IRealtimeScreenDSClient
     };
 
     /// core
-    private _decodeRealtimeMessage(jsonstr: string): IRealtimeScreen | undefined {
+    private _decodeRealtimeMessages(jsonstr: string): IRealtimeScreenDSClientMessage[] {
 
-        let jsonObj: {
-
-            "device_id": string,      // required, unique. ID của thiết bị. Ex: 001AC27B0048
-            "timestamp": number,        // required. Ex: 1725980612000
-            "screen": Array<string>      // required. Ex: ["100.0", "5.0", "20.0"]
-        };
-
+        let originJson: any;
 
         try {
-            const originJson = JSON.parse(jsonstr);
-            jsonObj = originJson["content"];
-            //  console.log("jsonObj", jsonObj);
-
+            originJson = JSON.parse(jsonstr);
         } catch (e) {
-            console.log((e as Error).message);
-            return undefined;
+            this._logger.error((e as Error).message);
+            return [];
         }
 
-        if (!jsonObj.device_id || !jsonObj.screen || !jsonObj.timestamp) {
-            this._logger.error("Leak of field(s) when decode json");
+        const payload = originJson?.content ?? originJson;
+        const rawEntries = Array.isArray(payload)
+            ? payload
+            : [payload];
 
-            return undefined;
+        const messages: IRealtimeScreenDSClientMessage[] = [];
+
+        for (const entry of rawEntries) {
+            if (!entry || !entry.device_id || !entry.timestamp) continue;
+
+            const normalizedDeviceId = String(entry.device_id);
+            const normalizedTimestamp = Number(entry.timestamp);
+
+            if (Array.isArray(entry.screen) && entry.screen.length === 3) {
+                messages.push({
+                    event: "screen",
+                    screen: {
+                        deviceId: normalizedDeviceId,
+                        timestamp: normalizedTimestamp,
+                        screen: entry.screen.map((e: string) => String(e))
+                    }
+                });
+            }
+
+            if (typeof entry.keyboard_screen === "string") {
+                messages.push({
+                    event: "screen",
+                    keyboard_screen: {
+                        deviceId: normalizedDeviceId,
+                        timestamp: normalizedTimestamp,
+                        keyboard_screen: entry.keyboard_screen
+                    }
+                });
+            }
         }
 
-        if (jsonObj.screen.length != 3) {
-            this._logger.error("wrong screen field format");
-            return undefined
-        }
-        // console.log("jsonObj", jsonObj);
-        // everythings quite ok
-        const ret: IRealtimeScreen = {
-            deviceId: String(jsonObj["device_id"]),
-            timestamp: jsonObj["timestamp"],
-            screen: jsonObj["screen"].map((e: string) => String(e))
-        }
-
-        return ret
-
-
-
-
-
+        return messages;
     };
 
     get startListening(): boolean {

@@ -1,12 +1,14 @@
 
 
-import { Alert, Button, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Snackbar, Stack, Switch, Tooltip, Typography } from "@mui/material";
+import { Alert, Button, CircularProgress, Divider, FormControl, FormControlLabel, FormGroup, IconButton, InputLabel, MenuItem, Paper, Select, SelectChangeEvent, Snackbar, Stack, Switch, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { useEffect, useState } from "react";
 import { IReportRelayMsg } from "@/ipc-shared/IReportRelayMsg";
 import { ISetRelayMsg } from "@/ipc-shared/ISetRelayMsg";
+import { ISetKeyboardModeMsg } from "@/ipc-shared/ISetKeyboardModeMsg";
+import { IReportKeyboardModeMsg } from "@/ipc-shared/IReportKeyboardModeMsg";
 import { MsgTypeValue } from "@/ipc-shared/MessageType";
 import { v4 as uuidv4 } from 'uuid';
 import { disable } from "colors";
@@ -35,6 +37,7 @@ export const Controls = (
     // const [availableDevices, setAvailableDevices] = useState<Device[]>([]);
     const [relay1, setRelay1] = useState<boolean>(false);
     const [relay2, setRelay2] = useState<boolean>(false);
+    const [keyboardMode, setKeyboardMode] = useState<"physical" | "virtual">("physical");
 
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -58,6 +61,22 @@ export const Controls = (
     useEffect(() => {
         ipcSendRelayRequest();
     }, [relay1, relay2])
+
+    useEffect(() => {
+        ipcSendKeyboardModeRequest();
+    }, [keyboardMode, selectedDeviceMac]);
+
+    useEffect(() => {
+        if (!selectedDeviceMac) return;
+
+        window.ipcRenderer.getKeyboardMode?.(selectedDeviceMac)
+            .then((msg) => {
+                if (!msg) return;
+                if (msg.device_id !== selectedDeviceMac) return;
+                setKeyboardMode(msg.mode);
+            })
+            .catch(() => undefined);
+    }, [selectedDeviceMac]);
 
 
 
@@ -97,6 +116,13 @@ export const Controls = (
 
         })
 
+        window.ipcRenderer.onKeyboardModeMsg?.((_, modeReport: IReportKeyboardModeMsg) => {
+            if (!modeReport.device_id || modeReport.device_id !== selectedDeviceMac) return;
+            if (modeReport.mode === "physical" || modeReport.mode === "virtual") {
+                setKeyboardMode(modeReport.mode);
+            }
+        })
+
 
     }
 
@@ -124,6 +150,19 @@ export const Controls = (
         }
 
         window.ipcRenderer.sendSetRelayMsg(msg)
+    }
+
+    const ipcSendKeyboardModeRequest = () => {
+        if (!selectedDeviceMac) return;
+
+        const msg: ISetKeyboardModeMsg = {
+            message_id: uuidv4(),
+            message_type: MsgTypeValue.SET_KEYBOARD_MODE,
+            device_id: selectedDeviceMac,
+            mode: keyboardMode,
+        }
+
+        window.ipcRenderer.sendSetKeyboardModeMsg?.(msg)
     }
 
     return <FormGroup >
@@ -204,6 +243,22 @@ export const Controls = (
 
                 disabled={!selectedDeviceMac}
             />} label="Rơ le 2" />
+
+            <Stack direction="row" alignItems="center" spacing={2} marginX={3} className="w-3/12">
+                <InputLabel >Bàn phím</InputLabel>
+                <ToggleButtonGroup
+                    // size="small"
+                    exclusive
+                    value={keyboardMode}
+                    onChange={(_, nextMode: "physical" | "virtual" | null) => {
+                        if (nextMode) setKeyboardMode(nextMode)
+                    }}
+                    // disabled={!selectedDeviceMac}
+                >
+                    <ToggleButton value="physical">Physical</ToggleButton>
+                    <ToggleButton value="virtual">Virtual</ToggleButton>
+                </ToggleButtonGroup>
+            </Stack>
 
 
 

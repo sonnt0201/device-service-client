@@ -7,6 +7,11 @@ import { IEncodedLog } from '@/ipc-shared/Log'
 import { OtaProcess } from '@/ipc-shared/OtaProcess'
 import { realtimeScreenController } from 'electron/main/ipc-controllers/RealtimeScreenController'
 import { IORMTimestampFilter } from '@/ipc-shared/IORMTimestampFilter'
+import { ITcpRawLog } from 'electron/main/models/TcpRawLogBus'
+import { IDeviceServiceDevice } from '@/ipc-shared/IDeviceServiceDevice'
+import { IKeyboardButtonPressMsg } from '@/ipc-shared/IKeyboardButtonPressMsg'
+import { ISetKeyboardModeMsg } from '@/ipc-shared/ISetKeyboardModeMsg'
+import { IReportKeyboardModeMsg } from '@/ipc-shared/IReportKeyboardModeMsg'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -59,6 +64,26 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     msg: ISetRelayMsg
   ) => ipcRenderer.send('relay', msg),
 
+  sendKeyboardButtonPressMsg: (
+    msg: IKeyboardButtonPressMsg
+  ) => ipcRenderer.send('keyboard-press-virtual-buttons', msg),
+
+  sendSetKeyboardModeMsg: (
+    msg: ISetKeyboardModeMsg
+  ) => ipcRenderer.send('keyboard-mode', msg),
+
+  onKeyboardModeMsg: (
+    callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardModeMsg) => void
+  ) => {
+    ipcRenderer.on('keyboard-mode', (event, msg: IReportKeyboardModeMsg) => {
+      callback(event, msg)
+    })
+  },
+
+  getKeyboardMode: (
+    deviceId?: string
+  ) => ipcRenderer.invoke('keyboard-mode', { device_id: deviceId }),
+
   // ================== BEGIN: OTA ==================
   sendOtaFirmware: (
    otaMsg: IDownloadFirmMsg
@@ -75,6 +100,24 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   readLogsByTimestampRange: (
     filter: IORMTimestampFilter
   ) => ipcRenderer.invoke('logs', filter),
+
+  onTcpRawLog: (
+    callback: (event: Electron.IpcRendererEvent, msg: ITcpRawLog) => void
+  ) => {
+    ipcRenderer.on('tcp-raw-log', (event, msg: ITcpRawLog) => {
+      callback(event, msg)
+    })
+  },
+
+  onDevices: (
+    callback: (event: Electron.IpcRendererEvent, devices: IDeviceServiceDevice[]) => void
+  ) => {
+    ipcRenderer.on('devices', (event, devices: IDeviceServiceDevice[]) => {
+      callback(event, devices)
+    })
+  },
+
+  getCachedDevices: () => ipcRenderer.invoke('devices'),
 
   removeAllListener: ()=> {ipcRenderer.removeAllListeners()}
 

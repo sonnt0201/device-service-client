@@ -32,6 +32,22 @@ interface Window {
       msg: ISetRelayMsg
     ) => void;
 
+    sendSetKeyboardModeMsg: (
+      msg: ISetKeyboardModeMsg
+    ) => void;
+
+    onKeyboardModeMsg: (
+      callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardModeMsg) => void
+    ) => void;
+
+    getKeyboardMode: (
+      deviceId?: string
+    ) => Promise<IReportKeyboardModeMsg | undefined>;
+
+    sendKeyboardButtonPressMsg: (
+      msg: IKeyboardButtonPressMsg
+    ) => void;
+
     sendOtaFirmware: (
       otaMsg: IDownloadFirmMsg
     ) => void;
@@ -46,6 +62,32 @@ interface Window {
     readLogsByTimestampRange: (
       filter: IORMTimestampFilter
     ) => Promise<IEncodedLog[]>;
+
+    onTcpRawLog: (
+      callback: (event: Electron.IpcRendererEvent, msg: ITcpRawLog) => void
+    ) => void;
+
+    onDevices: (
+      callback: (event: Electron.IpcRendererEvent, devices: {
+        connection_state: boolean;
+        device_id: string;
+        device_type: number;
+        firm_version: number;
+        message_id: string;
+        message_type: number;
+        updated_at: number;
+      }[]) => void
+    ) => void;
+
+    getCachedDevices: () => Promise<{
+      connection_state: boolean;
+      device_id: string;
+      device_type: number;
+      firm_version: number;
+      message_id: string;
+      message_type: number;
+      updated_at: number;
+    }[]>;
 
     removeAllListener: () => void
 
