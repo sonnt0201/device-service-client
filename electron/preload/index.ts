@@ -12,6 +12,10 @@ import { IDeviceServiceDevice } from '@/ipc-shared/IDeviceServiceDevice'
 import { IKeyboardButtonPressMsg } from '@/ipc-shared/IKeyboardButtonPressMsg'
 import { ISetKeyboardModeMsg } from '@/ipc-shared/ISetKeyboardModeMsg'
 import { IReportKeyboardModeMsg } from '@/ipc-shared/IReportKeyboardModeMsg'
+import { IReportKeyboardButtonsPressedMsg } from '@/ipc-shared/IReportKeyboardButtonsPressedMsg'
+import { IReportPresetMsg } from '@/ipc-shared/IReportPresetMsg'
+import { ISetPresetMsg } from '@/ipc-shared/ISetPresetMsg'
+import { IPresetStatusMsg } from '@/ipc-shared/IPresetStatusMsg'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -54,6 +58,26 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     })
   },
 
+  onPresetEvent: (
+    callback: (event: Electron.IpcRendererEvent, preset: IReportPresetMsg) => void
+  ) => {
+    ipcRenderer.on('logi-preset-event', (event, preset: IReportPresetMsg) => {
+      callback(event, preset)
+    })
+  },
+
+  sendPresetRequest: (
+    msg: ISetPresetMsg
+  ) => ipcRenderer.send('preset-request', msg),
+
+  onPresetStatus: (
+    callback: (event: Electron.IpcRendererEvent, status: IPresetStatusMsg) => void
+  ) => {
+    ipcRenderer.on('preset-request', (event, status: IPresetStatusMsg) => {
+      callback(event, status)
+    })
+  },
+
   onRelayEvent: (
     callback: (event: Electron.IpcRendererEvent, relayReport: IReportRelayMsg) => void
   ) => {
@@ -76,6 +100,14 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardModeMsg) => void
   ) => {
     ipcRenderer.on('keyboard-mode', (event, msg: IReportKeyboardModeMsg) => {
+      callback(event, msg)
+    })
+  },
+
+  onKeyboardButtonsPressedMsg: (
+    callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardButtonsPressedMsg) => void
+  ) => {
+    ipcRenderer.on('keyboard-buttons-pressed', (event, msg: IReportKeyboardButtonsPressedMsg) => {
       callback(event, msg)
     })
   },

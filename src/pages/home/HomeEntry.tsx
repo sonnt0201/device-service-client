@@ -4,10 +4,13 @@ import { Controls } from "./Controls";
 import { Paper, Stack } from "@mui/material";
 import BillsTable from "./BillsTable";
 import { IEncodedLog } from "@/ipc-shared/Log";
+import { IReportPresetMsg } from "@/ipc-shared/IReportPresetMsg";
 import { Keyboard_Seen } from "@/components/ui/Keyboard_Seen";
 import { IKeyboardButtonPressMsg } from "@/ipc-shared/IKeyboardButtonPressMsg";
+import { IReportKeyboardButtonsPressedMsg } from "@/ipc-shared/IReportKeyboardButtonsPressedMsg";
 import { MsgTypeValue } from "@/ipc-shared/MessageType";
 import { v4 as uuidv4 } from 'uuid';
+import { ScreenButtonHistoryLog } from "@/components/ScreenButtonHistoryLog";
 import { CommunicationMessageLog } from "@/components/CommunicationMessageLog";
 import { IDeviceServiceDevice } from "@/ipc-shared/IDeviceServiceDevice";
 
@@ -22,11 +25,13 @@ export const HomeEntry = () => {
 
   const [keyboardScreenText, setKeyboardScreenText] = useState<string>("");
 
-  const [gasLogs, setGasLogs] = useState<Set<IEncodedLog>>(new Set<IEncodedLog>());
+  const [gasLogs, setGasLogs] = useState<Set<IEncodedLog | IReportPresetMsg>>(new Set());
 
   const [availableDevices, setAvailableDevices] = useState<IDeviceServiceDevice[]>([]);
 
   const [selectedDeviceMac, setSelectedDeviceMac] = useState<string>("");
+
+  const [recentPressedButtonsByDevice, setRecentPressedButtonsByDevice] = useState<Record<string, { buttonId: number; timestamp: number }[]>>({});
 
   useEffect(() => {
     const applyDevices = (devices: IDeviceServiceDevice[]) => {
@@ -43,7 +48,11 @@ export const HomeEntry = () => {
       .catch(() => undefined);
 
     window.ipcRenderer.onRealtimeScreenMsg((_, msg) => {
-      if (msg.screen && selectedDeviceMac !== msg.screen.deviceId) {
+      if (msg.screen
+        //  && selectedDeviceMac === msg.screen.deviceId
+
+      ) {
+        // console.log(msg.screen)
         setTotalCost(msg.screen.screen[0]);
         setFuelVolume(msg.screen.screen[1]);
         setFuelUnitPrice(msg.screen.screen[2]);
@@ -51,14 +60,41 @@ export const HomeEntry = () => {
 
       // Handle keyboard screen data if present
       if (msg.keyboard_screen) {
-        setKeyboardScreenText(msg.keyboard_screen.keyboard_screen);
+        setKeyboardScreenText(msg.keyboard_screen.keyboard_screen.join("\n"));
       }
     })
+
+    window.ipcRenderer.onKeyboardButtonsPressedMsg((_, msg: IReportKeyboardButtonsPressedMsg) => {
+      const normalizedButtons = msg.button_actions
+        .flatMap((action) => action.button_list.map((buttonId) => ({
+          buttonId,
+          timestamp: action.timestamp,
+        })))
+        .filter((item) => Number.isInteger(item.buttonId));
+
+      if (normalizedButtons.length === 0) return;
+
+      setRecentPressedButtonsByDevice((prev) => {
+        const current = prev[msg.device_id] ?? [];
+        const next = [...normalizedButtons, ...current]
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 10);
+
+        return {
+          ...prev,
+          [msg.device_id]: next,
+        };
+      });
+    });
 
     window.ipcRenderer.onLogEvent((_, gasLog: IEncodedLog) => {
       setGasLogs(prevLogs => new Set([...prevLogs, gasLog]));
       // console.log(gasLog)
     })
+
+    window.ipcRenderer.onPresetEvent((_, preset: IReportPresetMsg) => {
+      setGasLogs(prevLogs => new Set([...prevLogs, preset]));
+    });
 
     return () => {
       window.ipcRenderer.removeAllListener()
@@ -102,7 +138,7 @@ export const HomeEntry = () => {
   return (
 
     <div className="home flex flex-col items-center justify-center">
-      <Paper className="w-full p-1" >
+      <Paper className="w-full" >
         <Controls
           availableDeviceMacs={availableDevices.map((device) => device.device_id)}
           selectedDeviceMac={selectedDeviceMac}
@@ -122,6 +158,7 @@ export const HomeEntry = () => {
             lcdText={keyboardScreenText || "SEEN"}
             selectedDeviceMac={selectedDeviceMac}
             onKeyPress={handleKeyboardButtonPress}
+            recentPressedButtons={recentPressedButtonsByDevice[selectedDeviceMac] ?? []}
           />
         </Paper>
 
@@ -134,7 +171,21 @@ export const HomeEntry = () => {
         </Paper>
       </Stack>
 
-      <CommunicationMessageLog />
+
+      <Paper elevation={4} className="w-full mt-4">
+        <ScreenButtonHistoryLog selectedDeviceMac={selectedDeviceMac} />
+      </Paper>
+
+         <CommunicationMessageLog />
+
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} marginY={2}>
+
+        {/* <Paper elevation={4} className="w-8/12"> */}
+     
+        {/* </Paper> */}
+
+      </Stack>
+
     </div>
 
 

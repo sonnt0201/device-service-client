@@ -8,5 +8,5 @@ interface IRealtimeScreen {
 interface IRealtimeKeyboardScreen {
     deviceId: string,
     timestamp: number,
-    keyboard_screen: string,
+    keyboard_screen: string[],
 }

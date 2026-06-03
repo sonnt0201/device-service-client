@@ -24,6 +24,18 @@ interface Window {
       callback: (event: Electron.IpcRendererEvent, gasLog: IEncodedLog) => void
     ) => void;
 
+    onPresetEvent: (
+      callback: (event: Electron.IpcRendererEvent, preset: IReportPresetMsg) => void
+    ) => void;
+
+    sendPresetRequest: (
+      msg: ISetPresetMsg
+    ) => void;
+
+    onPresetStatus: (
+      callback: (event: Electron.IpcRendererEvent, status: IPresetStatusMsg) => void
+    ) => void;
+
     onRelayEvent: (
       callback: (event: Electron.IpcRendererEvent, relayReport: IReportRelayMsg) => void
     ) => void;
@@ -38,6 +50,10 @@ interface Window {
 
     onKeyboardModeMsg: (
       callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardModeMsg) => void
+    ) => void;
+
+    onKeyboardButtonsPressedMsg: (
+      callback: (event: Electron.IpcRendererEvent, msg: IReportKeyboardButtonsPressedMsg) => void
     ) => void;
 
     getKeyboardMode: (

@@ -54,7 +54,8 @@ class KeyboardModeController extends IPCControllerBaseV2<ISetKeyboardModeMsg, IR
   }
 
   update(data: IEventMsg): void {
-    if (data.content.message_type !== MsgTypeValue.REPORT_KEYBOARD_MODE) return;
+    const messageType = Number(data.content.message_type);
+    if (messageType !== MsgTypeValue.REPORT_KEYBOARD_MODE) return;
 
     const msg = data.content as Partial<IReportKeyboardModeMsg>;
     if (!msg.device_id || (msg.mode !== "physical" && msg.mode !== "virtual")) {

@@ -151,13 +151,13 @@ export class RealtimeScreenDSListener extends Observable<IRealtimeScreenDSClient
                 });
             }
 
-            if (typeof entry.keyboard_screen === "string") {
+            if (Array.isArray(entry.keyboard_screen)) {
                 messages.push({
                     event: "screen",
                     keyboard_screen: {
                         deviceId: normalizedDeviceId,
                         timestamp: normalizedTimestamp,
-                        keyboard_screen: entry.keyboard_screen
+                        keyboard_screen: entry.keyboard_screen.map((line: string) => String(line))
                     }
                 });
             }

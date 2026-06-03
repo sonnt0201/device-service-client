@@ -17,9 +17,9 @@ function App() {
   return (
     <div className='w-12/12 h-full flex flex-col '>
       <BrowserRouter>
-        <CustomAppBar />
+        {/* <CustomAppBar /> */}
 
-        <div className='mt-10'>
+        <div className=''>
           <HomeEntry />
           {/* <HashRouter> */}
             {/* <Routes> */}

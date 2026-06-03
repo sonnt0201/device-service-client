@@ -19,6 +19,7 @@ export enum MsgTypeValue {
 
     KEYBOARD_PRESS_VIRTUAL_BUTTONS = 12,
     KEYBOARD_REPORT_BUTTONS_PRESSED = 13,
+    REQUEST_PRESET = 14,
 }
 
 /**

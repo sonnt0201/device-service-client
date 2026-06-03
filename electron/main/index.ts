@@ -13,6 +13,7 @@ import { tcpRawLogController } from './ipc-controllers/TcpRawLogController'
 import { deviceCacheController } from './ipc-controllers/DeviceCacheController'
 import { keyboardVirtualButtonController } from './ipc-controllers/KeyboardVirtualButtonController'
 import { keyboardModeController } from './ipc-controllers/KeyboardModeController'
+import { keyboardButtonReportController, presetEventController, presetRequestController } from './ipc-controllers'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -156,6 +157,12 @@ app.whenReady().then(() => createWindow()).then(() => {
     deviceCacheController.bindTargetWindow(win).start();
 
     keyboardModeController.bindTargetWindow(win).start();
+
+    keyboardButtonReportController.bindTargetWindow(win).start();
+
+    presetEventController.bindTargetWindow(win).start();
+
+    presetRequestController.bindTargetWindow(win).start();
 
     keyboardVirtualButtonController.start();
    

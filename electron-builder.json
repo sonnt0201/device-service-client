@@ -23,6 +23,12 @@
         "arch": [
           "x64"
         ]
+      },
+      {
+        "target": "msi",
+        "arch": [
+          "x64"
+        ]
       }
     ],
     "artifactName": "${productName}_${version}.${ext}"

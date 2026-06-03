@@ -1,5 +1,5 @@
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import { KEYBOARD_LABEL_TO_ID_MAP } from "@/ipc-shared/MessageType";
+import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material";
+import { KEYBOARD_BUTTON_ID_MAP, KEYBOARD_LABEL_TO_ID_MAP } from "@/ipc-shared/MessageType";
 
 const functionButtons = ["S", "P", "TIME", "TOTAL"] as const;
 
@@ -9,6 +9,7 @@ type KeyboardSeenProps = {
 	onKeyPress?: (buttonId: number) => void;
 	rowOneLabels?: string[];
 	rowTwoLabels?: string[];
+	recentPressedButtons?: { buttonId: number; timestamp: number }[];
 };
 
 export const Keyboard_Seen = ({
@@ -17,6 +18,7 @@ export const Keyboard_Seen = ({
 	onKeyPress,
 	rowOneLabels = ["$", "L", "F1", "F2", "F3", "F4", "F5", "00", "000", "E"],
 	rowTwoLabels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "C"],
+	recentPressedButtons = [],
 }: KeyboardSeenProps) => {
 	const renderKey = (label: string, variant: "contained" | "outlined" = "outlined") => {
 		const buttonId = KEYBOARD_LABEL_TO_ID_MAP[label];
@@ -75,11 +77,12 @@ export const Keyboard_Seen = ({
 							component="pre"
 							sx={{
 								m: 0,
-                               
+                               // 'Seven Segment',
 								fontFamily: "Consolas, 'Courier New', monospace",
 								color: "#71ff9b",
-								fontSize: 30,
-								lineHeight: 1.3,
+								fontSize: 36,
+								letterSpacing: "0.08em",
+								lineHeight: 1.5,
 								whiteSpace: "pre-wrap",
 								userSelect: "none",
 							}}
@@ -119,6 +122,36 @@ export const Keyboard_Seen = ({
 				>
 					{rowTwoLabels.slice(0, 11).map((label, idx) => renderKey(label || `R2-${idx + 1}`))}
 				</Box>
+
+				<Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+					<Typography sx={{ fontSize: 12, fontWeight: 700, color: "#2b3a4a" }}>
+						LAST BUTTONS
+					</Typography>
+					{recentPressedButtons.slice(0, 10).map((item, idx) => (
+						// <Box
+						// 	key={`${item.buttonId}-${item.timestamp}-${idx}`}
+						// 	sx={{
+						// 		minWidth: 34,
+						// 		height: 28,
+						// 		px: 1,
+						// 		borderRadius: 1,
+						// 		display: "inline-flex",
+						// 		alignItems: "center",
+						// 		justifyContent: "center",
+						// 		bgcolor: "#f4f7fb",
+						// 		border: "1px solid #b6c2cf",
+						// 		fontSize: 12,
+						// 		fontWeight: 700,
+						// 	}}
+						// >
+							<Chip label={KEYBOARD_BUTTON_ID_MAP[item.buttonId] ?? `#${item.buttonId}`} color="success" />
+							
+						// </Box>
+					))}
+					{recentPressedButtons.length === 0 && (
+						<Typography sx={{ fontSize: 12, color: "#596575" }}>-</Typography>
+					)}
+				</Stack>
 			</Stack>
 		</Paper>
 	);
