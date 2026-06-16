@@ -185,7 +185,7 @@ export const CommunicationMessageLog = () => {
               RECEIVED
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              <ToggleButtonGroup
+              {/* <ToggleButtonGroup
                 size="small"
                 exclusive
                 value={recvMode}
@@ -206,10 +206,10 @@ export const CommunicationMessageLog = () => {
                   },
                 }}
               >
-                {/* <ToggleButton value="all">All</ToggleButton> */}
+             
                 <ToggleButton value="stream" size="small">Stream</ToggleButton>
                 <ToggleButton value="event" size="small">Event</ToggleButton>
-              </ToggleButtonGroup>
+              </ToggleButtonGroup> */}
               <TextField
                 size="small"
                 variant="outlined"
