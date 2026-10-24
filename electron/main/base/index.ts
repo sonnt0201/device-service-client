@@ -1,10 +1,7 @@
 /**
- * @file Base module to provide interfaces for Electron main process. 
- * 
- * No-Dependency module.
- * 
- * Must include interface, abstract class and type only for other module (models or controllers) to implement or use.
+ * @deprecated Compatibility shim. The shared kernel moved to `electron/main/shared`.
+ * Kept so not-yet-migrated controllers keep compiling during the DDD migration.
+ * Remove once every context imports from `../shared` directly.
  */
-
-export type {IIPCController} from './IIPCController';
-export  {IPCControllerBase} from './IPCControllerBase';
+export type { IIPCController } from '../shared/ipc/IIPCController';
+export { IPCControllerBase } from '../shared/ipc/IPCControllerBase';

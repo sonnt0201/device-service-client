@@ -28,13 +28,38 @@ interface Window {
       callback: (event: Electron.IpcRendererEvent, preset: IReportPresetMsg) => void
     ) => void;
 
+    //* ============ PatchPlan 26-10-18 ========
+    /** §17 (nội bộ): state hiện tại của 3 máy phát hiện Preset / PumpLog / PriceSet */
+    onDetectorState: (
+      callback: (event: Electron.IpcRendererEvent, state: import("@/ipc-shared/IReportDetectorStateMsg").IReportDetectorStateMsg) => void
+    ) => void;
+    // * =========== End PatchPlan 26-10-18  ========
+
     sendPresetRequest: (
       msg: ISetPresetMsg
     ) => void;
 
+    //* ============ PatchPlan 26-7-21 ========
+    /** §15 từ 11-08-2026 dùng hình dạng {status, meta} riêng - xem IKeyboardPresetStatusMsg */
     onPresetStatus: (
-      callback: (event: Electron.IpcRendererEvent, status: IPresetStatusMsg) => void
+      callback: (event: Electron.IpcRendererEvent, status: IKeyboardPresetStatusMsg) => void
     ) => void;
+
+    /** D6: §12 Nhấn phím ảo giờ cũng có phản hồi cuối cùng */
+    onKeyboardPressStatus: (
+      callback: (event: Electron.IpcRendererEvent, status: IKeyboardStatusMsg) => void
+    ) => void;
+    // * =========== End PatchPlan 26-7-21  ========
+
+    //* ============ PatchPlan 26-8-11 ========
+    sendStopBumpMsg: (
+      msg: IStopBumpMsg
+    ) => void;
+
+    onStopBumpStatus: (
+      callback: (event: Electron.IpcRendererEvent, status: IKeyboardStatusMsg) => void
+    ) => void;
+    // * =========== End PatchPlan 26-8-11  ========
 
     onRelayEvent: (
       callback: (event: Electron.IpcRendererEvent, relayReport: IReportRelayMsg) => void
@@ -104,6 +129,38 @@ interface Window {
       message_type: number;
       updated_at: number;
     }[]>;
+
+    // ---- SEEN device simulator (second window) ----
+
+    /** Open (or focus) the SEEN device-simulator window. */
+    openSeenDeviceSim: () => Promise<void>;
+
+    /** Fire a command to the simulator (connect, key press, nozzle, …). */
+    sendSeenSimCommand: (cmd: import('@/ipc-shared/seen-sim/SeenSimContracts').SeenSimCommand) => void;
+
+    /** Initial state fetch. */
+    getSeenSimSnapshot: () => Promise<import('@/ipc-shared/seen-sim/SeenSimContracts').ISeenSimSnapshot>;
+
+    /** Every state change of the simulator. */
+    onSeenSimSnapshot: (
+      callback: (
+        event: Electron.IpcRendererEvent,
+        snapshot: import('@/ipc-shared/seen-sim/SeenSimContracts').ISeenSimSnapshot
+      ) => void
+    ) => void;
+
+    /** Raw device<->DS frames for the simulator's link. */
+    onSeenSimLog: (
+      callback: (event: Electron.IpcRendererEvent, msg: ITcpRawLog) => void
+    ) => void;
+
+    /** One structured frame per device<->DS packet (log window + inspector). */
+    onSeenSimFrame: (
+      callback: (
+        event: Electron.IpcRendererEvent,
+        frame: import('@/ipc-shared/seen-sim/SeenSimContracts').ISeenSimFrameLog
+      ) => void
+    ) => void;
 
     removeAllListener: () => void
 

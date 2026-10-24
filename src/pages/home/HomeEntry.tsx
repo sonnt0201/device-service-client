@@ -5,6 +5,8 @@ import { Paper, Stack } from "@mui/material";
 import BillsTable from "./BillsTable";
 import { IEncodedLog } from "@/ipc-shared/Log";
 import { IReportPresetMsg } from "@/ipc-shared/IReportPresetMsg";
+import { IReportDetectorStateMsg } from "@/ipc-shared/IReportDetectorStateMsg";
+import { DetectorStatePanel } from "@/components/DetectorStatePanel";
 import { Keyboard_Seen } from "@/components/ui/Keyboard_Seen";
 import { IKeyboardButtonPressMsg } from "@/ipc-shared/IKeyboardButtonPressMsg";
 import { IReportKeyboardButtonsPressedMsg } from "@/ipc-shared/IReportKeyboardButtonsPressedMsg";
@@ -31,6 +33,9 @@ export const HomeEntry = () => {
 
   const [selectedDeviceMac, setSelectedDeviceMac] = useState<string>("");
 
+  /** State mới nhất của 3 máy phát hiện, theo từng thiết bị (nội bộ, LogiAPI §17) */
+  const [detectorStateByDevice, setDetectorStateByDevice] = useState<Record<string, IReportDetectorStateMsg>>({});
+
   const [recentPressedButtonsByDevice, setRecentPressedButtonsByDevice] = useState<Record<string, { buttonId: number; timestamp: number }[]>>({});
 
   useEffect(() => {
@@ -48,7 +53,14 @@ export const HomeEntry = () => {
       .catch(() => undefined);
 
     window.ipcRenderer.onRealtimeScreenMsg((_, msg) => {
-      if (msg.screen
+      //* ============ PatchPlan 26-7-21 ========
+      /*
+       * D1/D2: màn hình cột bơm và màn hình bàn phím giờ về chung trường `screen`,
+       * phân biệt bằng `kind` (do RealtimeScreenDSListener suy ra từ số dòng).
+       */
+      if (!msg.screen) return;
+
+      if (msg.screen.kind === "main"
         //  && selectedDeviceMac === msg.screen.deviceId
 
       ) {
@@ -58,10 +70,10 @@ export const HomeEntry = () => {
         setFuelUnitPrice(msg.screen.screen[2]);
       }
 
-      // Handle keyboard screen data if present
-      if (msg.keyboard_screen) {
-        setKeyboardScreenText(msg.keyboard_screen.keyboard_screen.join("\n"));
+      if (msg.screen.kind === "keyboard") {
+        setKeyboardScreenText(msg.screen.screen.join("\n"));
       }
+      // * =========== End PatchPlan 26-7-21  ========
     })
 
     window.ipcRenderer.onKeyboardButtonsPressedMsg((_, msg: IReportKeyboardButtonsPressedMsg) => {
@@ -94,6 +106,10 @@ export const HomeEntry = () => {
 
     window.ipcRenderer.onPresetEvent((_, preset: IReportPresetMsg) => {
       setGasLogs(prevLogs => new Set([...prevLogs, preset]));
+    });
+
+    window.ipcRenderer.onDetectorState((_, state: IReportDetectorStateMsg) => {
+      setDetectorStateByDevice((prev) => ({ ...prev, [state.device_id]: state }));
     });
 
     return () => {
@@ -138,7 +154,18 @@ export const HomeEntry = () => {
   return (
 
     <div className="home flex flex-col items-center justify-center">
-      <Paper className="w-full" >
+      {/* Tạm ẩn nút mở cửa sổ mô phỏng thiết bị SEEN cho bản release.
+          Bật lại bằng cách bỏ comment khối này. */}
+      {/* <Paper className="w-full px-4 flex items-center justify-between gap-2" >
+        <Button
+          size="small"
+          variant="outlined"
+          onClick={() => window.ipcRenderer.openSeenDeviceSim?.()}
+        >
+          Mở mô phỏng thiết bị SEEN
+        </Button>
+      </Paper> */}
+      <Paper className="w-full px-4" >
         <Controls
           availableDeviceMacs={availableDevices.map((device) => device.device_id)}
           selectedDeviceMac={selectedDeviceMac}
@@ -149,6 +176,10 @@ export const HomeEntry = () => {
             setFuelUnitPrice("_");
           }}
         />
+      </Paper>
+
+      <Paper className="w-full">
+        <DetectorStatePanel state={detectorStateByDevice[selectedDeviceMac]} />
       </Paper>
 
       <Stack direction={"row"} spacing={3} className="w-12/12 mx-auto align-center my-4 bg-red-0" alignItems="flex-start">

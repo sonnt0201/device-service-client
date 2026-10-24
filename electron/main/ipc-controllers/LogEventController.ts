@@ -78,7 +78,15 @@ any, any
 
         this._logger.log(`Sending event data to window ${this._targetWindow.id}`);
 
-        this._logsORM.create(data.content as IEncodedLog);
+        //* ============ PatchPlan 26-10-19 ========
+        // Lỗi ghi DB (vd ràng buộc UNIQUE) không được ném ra khỏi callback của socket: nó thành
+        // "Uncaught Exception" và sập main process. Ghi log lỗi rồi vẫn đẩy sự kiện lên giao diện.
+        try {
+            this._logsORM.create(data.content as IEncodedLog);
+        } catch (error) {
+            this._logger.error(`Cannot save log/sublog to database: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        // * =========== End PatchPlan 26-10-19  ========
 
         this._targetWindow.webContents.send(this.channel(), data.content as IEncodedLog);
     }

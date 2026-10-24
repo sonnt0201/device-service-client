@@ -57,14 +57,23 @@ function entryToCsvRow(entry: LogEntry): string {
   return [String(entry.timestamp), entry.type, escapeCsv(entry.content)].join(",");
 }
 
+//* ============ PatchPlan 26-7-21 ========
+/**
+ * D1/D2: chỉ còn một trường `screen`, không còn nhánh `keyboard_screen`.
+ *
+ * Vẫn giữ khác biệt nhỏ giữa hai loại: màn hình bàn phím lấy nguyên dòng (dòng rỗng cũng
+ * là thông tin - màn tắt), màn hình cột bơm bỏ dòng rỗng như cũ.
+ */
 function toScreenText(msg: IRealtimeScreenDSClientMessage): string | null {
-  if (msg.keyboard_screen?.keyboard_screen) {
-    return msg.keyboard_screen.keyboard_screen.join('\n').trim();
-  }
-
   if (!msg.screen) return null;
-  return msg.screen.screen.filter(Boolean).join("\n").trim();
+
+  const lines = msg.screen.kind === "keyboard"
+    ? msg.screen.screen
+    : msg.screen.screen.filter(Boolean);
+
+  return lines.join("\n").trim();
 }
+// * =========== End PatchPlan 26-7-21  ========
 
 type ScreenButtonHistoryLogProps = {
   selectedDeviceMac?: string;
@@ -82,7 +91,9 @@ export const ScreenButtonHistoryLog = ({ selectedDeviceMac }: ScreenButtonHistor
 
   useEffect(() => {
     const handleScreen = (_: Electron.IpcRendererEvent, msg: IRealtimeScreenDSClientMessage) => {
-      const screenPayload = msg.keyboard_screen ?? msg.screen;
+      //* ============ PatchPlan 26-7-21 ========
+      const screenPayload = msg.screen;
+      // * =========== End PatchPlan 26-7-21  ========
       if (!screenPayload) return;
 
       const deviceId = screenPayload.deviceId;

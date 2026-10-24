@@ -11,9 +11,20 @@ import { relaycontroller } from './ipc-controllers/RelayController'
 import { otaController } from './ipc-controllers/OTAController'
 import { tcpRawLogController } from './ipc-controllers/TcpRawLogController'
 import { deviceCacheController } from './ipc-controllers/DeviceCacheController'
-import { keyboardVirtualButtonController } from './ipc-controllers/KeyboardVirtualButtonController'
-import { keyboardModeController } from './ipc-controllers/KeyboardModeController'
-import { keyboardButtonReportController, presetEventController, presetRequestController } from './ipc-controllers'
+import {
+  keyboardVirtualButtonController,
+  keyboardModeController,
+  stopBumpController,
+  keyboardButtonReportController,
+  presetEventController,
+  presetRequestController,
+  detectorStateController,
+} from './contexts/keyboard/ipc'
+import {
+  seenDeviceSimController,
+  seenDeviceSimLogController,
+  seenDeviceSimFrameLogController,
+} from './simulators/seen-device'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -50,8 +61,48 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null
+let seenSimWin: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
+
+/**
+ * The SEEN device-simulator window. Separate BrowserWindow, `#/seen-device`
+ * route, its own IPC surface. Reuses the main renderer bundle (HashRouter).
+ */
+function openSeenSimWindow() {
+  if (seenSimWin && !seenSimWin.isDestroyed()) {
+    if (seenSimWin.isMinimized()) seenSimWin.restore()
+    seenSimWin.focus()
+    return
+  }
+
+  seenSimWin = new BrowserWindow({
+    width: 1280,
+    height: 900,
+    title: 'SEEN Device Simulator',
+    icon: path.join(process.env.VITE_PUBLIC as string, 'favicon.ico'),
+    webPreferences: { preload },
+  })
+
+  const hash = '/seen-device'
+  if (VITE_DEV_SERVER_URL) {
+    seenSimWin.loadURL(`${VITE_DEV_SERVER_URL}#${hash}`)
+    seenSimWin.webContents.openDevTools()
+  } else {
+    seenSimWin.loadFile(indexHtml, { hash })
+  }
+
+  seenDeviceSimController.bindTargetWindow(seenSimWin).start()
+  seenDeviceSimLogController.bindTargetWindow(seenSimWin).start()
+  seenDeviceSimFrameLogController.bindTargetWindow(seenSimWin).start()
+
+  seenSimWin.on('closed', () => {
+    seenDeviceSimController.removeTargetWindow()
+    seenDeviceSimLogController.removeTargetWindow()
+    seenDeviceSimFrameLogController.removeTargetWindow()
+    seenSimWin = null
+  })
+}
 
 async function createWindow() {
 
@@ -121,6 +172,11 @@ app.on('activate', () => {
   }
 })
 
+// Open (or focus) the SEEN device-simulator window.
+ipcMain.handle('open-seen-device-sim', () => {
+  openSeenSimWindow()
+})
+
 // New window example arg: new windows url
 ipcMain.handle('open-win', (_, arg) => {
   const childWindow = new BrowserWindow({
@@ -162,10 +218,20 @@ app.whenReady().then(() => createWindow()).then(() => {
 
     presetEventController.bindTargetWindow(win).start();
 
+    detectorStateController.bindTargetWindow(win).start();
+
     presetRequestController.bindTargetWindow(win).start();
 
-    keyboardVirtualButtonController.start();
-   
+    //* ============ PatchPlan 26-7-21 ========
+    // Giờ là IPCControllerBaseV2 (để đẩy phản hồi §12 lên giao diện - D6),
+    // mà V2.start() bắt buộc phải có target window trước.
+    keyboardVirtualButtonController.bindTargetWindow(win).start();
+    // * =========== End PatchPlan 26-7-21  ========
+
+    //* ============ PatchPlan 26-8-11 ========
+    stopBumpController.bindTargetWindow(win).start();
+    // * =========== End PatchPlan 26-8-11  ========
+
   }
 })
 

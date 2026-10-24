@@ -35,6 +35,7 @@ export const CommunicationMessageLog = () => {
   const recvRef = useRef<HTMLDivElement | null>(null);
   const isSendRecordingRef = useRef(isSendRecording);
   const isRecvRecordingRef = useRef(isRecvRecording);
+  const recvModeRef = useRef(recvMode);
 
   useEffect(() => {
     isSendRecordingRef.current = isSendRecording;
@@ -43,6 +44,10 @@ export const CommunicationMessageLog = () => {
   useEffect(() => {
     isRecvRecordingRef.current = isRecvRecording;
   }, [isRecvRecording]);
+
+  useEffect(() => {
+    recvModeRef.current = recvMode;
+  }, [recvMode]);
 
   const appendSendLog = (entry: TcpLogEntry) => {
     setSendLogs(prev => trimLogs([...prev, entry]));
@@ -80,8 +85,9 @@ export const CommunicationMessageLog = () => {
         const isEvent = msg.source === "event";
         const isStream = !isEvent;
 
-        if (recvMode === "event" && !isEvent) return;
-        if (recvMode === "stream" && !isStream) return;
+        const mode = recvModeRef.current;
+        if (mode === "event" && !isEvent) return;
+        if (mode === "stream" && !isStream) return;
 
         appendRecvLog(entry);
       }
@@ -185,7 +191,7 @@ export const CommunicationMessageLog = () => {
               RECEIVED
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              {/* <ToggleButtonGroup
+              <ToggleButtonGroup
                 size="small"
                 exclusive
                 value={recvMode}
@@ -206,10 +212,10 @@ export const CommunicationMessageLog = () => {
                   },
                 }}
               >
-             
+                <ToggleButton value="all" size="small">All</ToggleButton>
                 <ToggleButton value="stream" size="small">Stream</ToggleButton>
                 <ToggleButton value="event" size="small">Event</ToggleButton>
-              </ToggleButtonGroup> */}
+              </ToggleButtonGroup>
               <TextField
                 size="small"
                 variant="outlined"

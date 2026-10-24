@@ -7,8 +7,15 @@ import { ISetRelayMsg } from "@/ipc-shared/ISetRelayMsg";
 import { ISetKeyboardModeMsg } from "@/ipc-shared/ISetKeyboardModeMsg";
 import { IReportKeyboardModeMsg } from "@/ipc-shared/IReportKeyboardModeMsg";
 import { ISetPresetMsg } from "@/ipc-shared/ISetPresetMsg";
-import { IPresetStatusMsg } from "@/ipc-shared/IPresetStatusMsg";
-import { MsgTypeValue } from "@/ipc-shared/MessageType";
+import { IKeyboardPresetStatusMsg, IKeyboardStatusMsg } from "@/ipc-shared/IPresetStatusMsg";
+import { IStopBumpMsg } from "@/ipc-shared/IStopBumpMsg";
+//* ============ PatchPlan 26-7-21 ========
+import { describeKeyboardStatus, KeyboardMode, KeyboardStatusCode, MsgTypeValue } from "@/ipc-shared/MessageType";
+// * =========== End PatchPlan 26-7-21  ========
+//* ============ PatchPlan 26-8-11 ========
+import { describePresetStatus } from "@/ipc-shared/MessageType";
+import { StopCircleRounded } from "@mui/icons-material";
+// * =========== End PatchPlan 26-8-11  ========
 import { v4 as uuidv4 } from 'uuid';
 import { OtaTextFileUploadButton } from "./OtaTextFileUploadButton";
 import { OtaBinFileUploadButton } from "./OtaBinFileUploadButton";
@@ -35,11 +42,23 @@ export const Controls = (
     // const [availableDevices, setAvailableDevices] = useState<Device[]>([]);
     const [relay1, setRelay1] = useState<boolean>(false);
     const [relay2, setRelay2] = useState<boolean>(false);
-    const [keyboardMode, setKeyboardMode] = useState<"physical" | "virtual">("physical");
+    //* ============ PatchPlan 26-7-21 ========
+    // D3: "physical"/"virtual" -> "manu"/"auto" (Thủ công / Tự động)
+    const [keyboardMode, setKeyboardMode] = useState<KeyboardMode>("manu");
+    // * =========== End PatchPlan 26-7-21  ========
     const [presetModalOpen, setPresetModalOpen] = useState<boolean>(false);
     const [presetType, setPresetType] = useState<"cost" | "volume">("cost");
     const [presetValue, setPresetValue] = useState<string>("");
-    const [presetStatusByDevice, setPresetStatusByDevice] = useState<Record<string, IPresetStatusMsg>>({});
+    //* ============ PatchPlan 26-8-11 ========
+    /*
+     * Chung 1 ô hiển thị cho mọi yêu cầu bàn phím (đặt preset / nhấn phím ảo / dừng bơm)
+     * vì thiết bị chỉ chạy 1 việc một lúc (R4). Từ 11-08-2026, §15 Bán theo Preset đổi
+     * hình dạng phản hồi thành {status, meta} trong khi §12/§16 vẫn {status_code,
+     * error_message} - nên đây là union, phân biệt bằng `isPresetStatus` khi hiển thị.
+     */
+    const [keyboardStatusByDevice, setKeyboardStatusByDevice] =
+        useState<Record<string, IKeyboardPresetStatusMsg | IKeyboardStatusMsg>>({});
+    // * =========== End PatchPlan 26-8-11  ========
 
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -125,23 +144,47 @@ export const Controls = (
 
         })
 
+        //* ============ PatchPlan 26-7-21 ========
         window.ipcRenderer.onKeyboardModeMsg?.((_, modeReport: IReportKeyboardModeMsg) => {
             const currentDeviceMac = selectedDeviceMacRef.current;
             if (!modeReport.device_id || modeReport.device_id !== currentDeviceMac) return;
-            if (modeReport.mode === "physical" || modeReport.mode === "virtual") {
+            // D3: manu/auto. D10: gói này giờ còn tự đến khi thiết bị kết nối
+            // hoặc khi có người gạt công tắc trên máy, không chỉ khi ta vừa đặt mode.
+            if (modeReport.mode === "manu" || modeReport.mode === "auto") {
                 setKeyboardMode(modeReport.mode);
             }
         })
 
-        window.ipcRenderer.onPresetStatus?.((_, status: IPresetStatusMsg) => {
+        window.ipcRenderer.onPresetStatus?.((_, status: IKeyboardPresetStatusMsg) => {
             if (!status.device_id) return;
-            setPresetStatusByDevice((prev) => ({
+            setKeyboardStatusByDevice((prev) => ({
                 ...prev,
                 [status.device_id as string]: status,
             }));
         })
 
+        // D6: §12 Nhấn phím ảo giờ cũng có phản hồi cuối cùng. Dùng chung ô hiển thị
+        // với preset vì cả hai đều là "yêu cầu bàn phím" và thiết bị chỉ chạy 1 việc
+        // một lúc (R4: mỗi thiết bị chỉ có tối đa 1 yêu cầu đang chờ).
+        window.ipcRenderer.onKeyboardPressStatus?.((_, status: IKeyboardStatusMsg) => {
+            if (!status.device_id) return;
+            setKeyboardStatusByDevice((prev) => ({
+                ...prev,
+                [status.device_id as string]: status,
+            }));
+        })
+        // * =========== End PatchPlan 26-7-21  ========
 
+        //* ============ PatchPlan 26-8-11 ========
+        // §16 Dừng bơm: cùng hình dạng {status_code} như §12, dùng chung ô hiển thị.
+        window.ipcRenderer.onStopBumpStatus?.((_, status: IKeyboardStatusMsg) => {
+            if (!status.device_id) return;
+            setKeyboardStatusByDevice((prev) => ({
+                ...prev,
+                [status.device_id as string]: status,
+            }));
+        })
+        // * =========== End PatchPlan 26-8-11  ========
     }
 
     const removeIPCListeners = () => {
@@ -196,23 +239,69 @@ export const Controls = (
         window.ipcRenderer.sendPresetRequest?.(msg);
     };
 
-    const presetStatus = selectedDeviceMac ? presetStatusByDevice[selectedDeviceMac] : undefined;
-    const presetSeverity = (status?: string) => {
-        switch (status) {
-            case "received":
-                return "info";
-            case "busy":
-                return "warning";
-            case "error":
-                return "error";
-            case "done":
+    //* ============ PatchPlan 26-8-11 ========
+    const ipcSendStopBumpRequest = () => {
+        if (!selectedDeviceMac) return;
+
+        const msg: IStopBumpMsg = {
+            message_id: uuidv4(),
+            message_type: MsgTypeValue.STOP_BUMP,
+            device_id: selectedDeviceMac,
+        };
+
+        window.ipcRenderer.sendStopBumpMsg?.(msg);
+    };
+
+    /** §15 dùng {status, meta}; §12/§16 dùng {status_code, error_message} - phân biệt bằng field `status`. */
+    const isPresetStatus = (
+        status: IKeyboardPresetStatusMsg | IKeyboardStatusMsg
+    ): status is IKeyboardPresetStatusMsg => "status" in status;
+    // * =========== End PatchPlan 26-8-11  ========
+
+    const keyboardStatus = selectedDeviceMac ? keyboardStatusByDevice[selectedDeviceMac] : undefined;
+
+    //* ============ PatchPlan 26-7-21 ========
+    /*
+     * D9: `status` (chuỗi) -> `status_code` (số) cho §10/§12/§16. §15 quay lại dùng chuỗi
+     * từ 11-08-2026 (xem nhánh preset) - cả 2 nhánh đều map ra cùng 1 bộ severity.
+     */
+    const keyboardSeverity = (status?: IKeyboardPresetStatusMsg | IKeyboardStatusMsg) => {
+        if (!status) return "info";
+
+        if (isPresetStatus(status)) {
+            switch (status.status) {
+                case "done": return "success";
+                case "busy": return "warning";
+                case "received": return "info";
+                case "error": return "error";
+                default: return "info";
+            }
+        }
+
+        switch (status.status_code) {
+            case KeyboardStatusCode.OK:
                 return "success";
+            case KeyboardStatusCode.DEVICE_BUSY:
+                return "warning";
+            case KeyboardStatusCode.INVALID_REQUEST:
+            case KeyboardStatusCode.DEVICE_DISCONNECTED:
+            case KeyboardStatusCode.EXECUTION_ERROR:
+                return "error";
             default:
                 return "info";
         }
     };
 
-    const presetMeta = presetStatus?.meta?.toString().trim();
+    const keyboardStatusLabel = keyboardStatus
+        ? (isPresetStatus(keyboardStatus)
+            ? describePresetStatus(keyboardStatus.status)
+            : describeKeyboardStatus(keyboardStatus.status_code))
+        : "";
+
+    const keyboardTooltip = keyboardStatus
+        ? (isPresetStatus(keyboardStatus) ? keyboardStatus.meta : keyboardStatus.error_message)?.toString().trim()
+        : undefined;
+    // * =========== End PatchPlan 26-7-21  ========
 
     const handleOpenPresetModal = (type: "cost" | "volume") => {
         setPresetType(type);
@@ -234,7 +323,11 @@ export const Controls = (
     };
 
     return <FormGroup >
-        <Stack direction="row" className="items-center flex flex-row">
+        <Stack direction="row" spacing={1} alignItems="center" className="items-center flex flex-row" sx={{
+            '& .MuiButtonBase-root, & .MuiTypography-root, & .MuiInputBase-root, & .MuiFormControlLabel-label, & .MuiInputLabel-root, & .MuiChip-label': {
+                fontSize: '0.8125rem',
+            },
+        }}>
 
         {/* <LocalGasStationRounded /> */}
 
@@ -260,7 +353,7 @@ export const Controls = (
 
 
 
-            <FormControl className="w-2/12" sx={{marginX: 2}}  >
+            <FormControl className="w-2/12" size="small" sx={{marginX: 1}}  >
                 <InputLabel id="demo-simple-select-label">Thiết bị</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
@@ -305,7 +398,8 @@ export const Controls = (
                 onChange={(_, checked: boolean) => setRelay1(checked)}
 
                 disabled={!selectedDeviceMac}
-                
+                size="small"
+
             />} label="Rơ le 1" />
 
             <FormControlLabel control={<Switch
@@ -314,32 +408,38 @@ export const Controls = (
                 onChange={(_, checked: boolean) => setRelay2(checked)}
 
                 disabled={!selectedDeviceMac}
+                size="small"
             />} label="Rơ le 2" />
 
 
             </Paper>
-            
-            <Stack direction="row" alignItems="center" spacing={2} marginX={3} className="w-3/12">
+
+            <Stack direction="row" alignItems="center" spacing={1} marginX={1} className="w-3/12">
                 <InputLabel >Bàn phím</InputLabel>
+                {/* //* ============ PatchPlan 26-7-21 ======== */}
                 <ToggleButtonGroup
-                    // size="small"
+                    size="small"
                     exclusive
                     value={keyboardMode}
-                    onChange={(_, nextMode: "physical" | "virtual" | null) => {
+                    onChange={(_, nextMode: KeyboardMode | null) => {
                         if (nextMode) setKeyboardMode(nextMode)
                     }}
                     // disabled={!selectedDeviceMac}
                 >
-                    <ToggleButton value="physical"> vật lý</ToggleButton>
-                    <ToggleButton value="virtual">ảo hóa </ToggleButton>
+                    {/* D3: tên chế độ theo LogiAPI 21-07-2026. "vật lý/ảo hóa" là tên của
+                        cái mux CPLD, không phải tên chế độ bán mà API đang nói đến. */}
+                    <ToggleButton value="manu">thủ công</ToggleButton>
+                    <ToggleButton value="auto">tự động</ToggleButton>
                 </ToggleButtonGroup>
+                {/* // * =========== End PatchPlan 26-7-21  ======== */}
             </Stack>
 
-            <Stack direction="row" alignItems="flex-start" spacing={1} marginRight={2} 
+            <Stack direction="row" alignItems="center" spacing={0.5} marginRight={1}
            className="w-3/12"
             >
                 <Button
                     variant="contained"
+                    size="small"
                     onClick={() => handleOpenPresetModal("cost")}
                     disabled={!selectedDeviceMac}
                     startIcon={<LocalGasStationRounded />}
@@ -347,19 +447,35 @@ export const Controls = (
                 >
                     đặt bơm
                 </Button>
-                {presetStatus && presetStatus.status && (
-                    <Tooltip title={presetMeta || ""} disableHoverListener={!presetMeta}>
+                {/* //* ============ PatchPlan 26-8-11 ======== */}
+                <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={ipcSendStopBumpRequest}
+                    disabled={!selectedDeviceMac}
+                    startIcon={<StopCircleRounded />}
+                    className="w-8/12"
+                >
+                    dừng bơm
+                </Button>
+                {/* // * =========== End PatchPlan 26-8-11  ======== */}
+                {/* //* ============ PatchPlan 26-7-21 ======== */}
+                {keyboardStatus && (
+                    <Tooltip title={keyboardTooltip} disableHoverListener={!keyboardTooltip}>
                         <Chip
-                            label={`Preset: ${presetStatus.status}`}
-                            color={presetSeverity(presetStatus.status)}
+                            size="small"
+                            label={`Bàn phím: ${keyboardStatusLabel}`}
+                            color={keyboardSeverity(keyboardStatus)}
                             variant="outlined"
                         />
                     </Tooltip>
                 )}
+                {/* // * =========== End PatchPlan 26-7-21  ======== */}
             </Stack>
 
 
-           {selectedDeviceMac && <div className="w-3/12">
+           {selectedDeviceMac && <div className="w-3/12 flex items-center">
                 <OtaBinFileUploadButton
                     deviceMAC={selectedDeviceMac}
                 />
